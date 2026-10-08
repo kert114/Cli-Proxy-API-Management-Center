@@ -1508,7 +1508,7 @@
     "sort_label": "Sắp xếp",
     "sort_default": "Mặc định",
     "sort_soonest": "Sớm khôi phục nhất",
-    "meta_credentials": "{{count}} credential",
+    "meta_credentials": "{{count}} tài khoản",
     "meta_loaded": "{{count}} đã tải",
     "meta_attention": "{{count}} cần chú ý",
     "empty_title": "Không có credential hỗ trợ quota",
@@ -1543,7 +1543,7 @@
     "weekday_fri": "T6",
     "weekday_sat": "T7",
     "search_label": "Tìm kiếm tài khoản",
-    "search_placeholder": "Tìm theo tên file hoặc email",
+    "search_placeholder": "Tìm theo tên tệp, email hoặc nhà cung cấp",
     "search_empty_title": "Không có tài khoản phù hợp",
     "search_empty_desc": "Hãy thử tên file hoặc email khác, hoặc xóa tìm kiếm.",
     "search_clear": "Xóa tìm kiếm"
@@ -2244,6 +2244,7 @@
     "auth_error": "Ủy quyền đã bị từ chối."
   },
   "cursor_usage": {
+    "account": "Tài khoản Cursor CLI",
     "title": "Mức sử dụng tài khoản Cursor",
     "description": "Tài khoản và nhóm được chọn trong Cursor CLI. Bao gồm mức sử dụng từ mọi ứng dụng.",
     "refresh": "Làm mới mức sử dụng Cursor",

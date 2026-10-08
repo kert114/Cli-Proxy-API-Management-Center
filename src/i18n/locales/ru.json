@@ -1549,7 +1549,7 @@
   },
   "quota_management": {
     "search_label": "Поиск аккаунтов",
-    "search_placeholder": "Поиск по имени файла или электронной почте",
+    "search_placeholder": "Поиск по имени файла, почте или провайдеру",
     "search_empty_title": "Аккаунты не найдены",
     "search_empty_desc": "Попробуйте другое имя файла или адрес электронной почты либо очистите поиск.",
     "search_clear": "Очистить поиск",
@@ -1559,7 +1559,7 @@
     "sort_label": "Сортировка",
     "sort_default": "По умолчанию",
     "sort_soonest": "Сначала ближайшее восстановление",
-    "meta_credentials": "{{count}} учётных данных",
+    "meta_credentials": "{{count}} аккаунтов",
     "meta_loaded": "{{count}} загружено",
     "meta_attention": "{{count}} требуют внимания",
     "empty_title": "Нет учётных данных с квотами",
@@ -2232,6 +2232,7 @@
     "auth_error": "Авторизация отклонена."
   },
   "cursor_usage": {
+    "account": "Учётная запись Cursor CLI",
     "title": "Использование аккаунта Cursor",
     "description": "Аккаунт и команда, выбранные в Cursor CLI. Включает использование из всех приложений.",
     "refresh": "Обновить использование Cursor",

@@ -1,11 +1,11 @@
 import {
   QUOTA_SORT_MODES,
-  QUOTA_TAB_ORDER,
+  QUOTA_WORKBENCH_ORDER,
   type QuotaSortMode,
   type QuotaTabId,
 } from './constants';
 
-/** 额度页 UI 偏好：会话级持久化（sessionStorage），跨会话不携带。 */
+/** Quota preferences persist within a browser session. */
 export type QuotaUiState = {
   tab?: QuotaTabId;
   sortMode?: QuotaSortMode;
@@ -13,7 +13,7 @@ export type QuotaUiState = {
 
 const QUOTA_UI_STATE_KEY = 'quotaPage.uiState';
 
-const QUOTA_TAB_ID_SET = new Set<string>(['all', ...QUOTA_TAB_ORDER]);
+const QUOTA_TAB_ID_SET = new Set<string>(['all', ...QUOTA_WORKBENCH_ORDER]);
 const QUOTA_SORT_MODE_SET = new Set<string>(QUOTA_SORT_MODES);
 
 export const isQuotaTabId = (value: unknown): value is QuotaTabId =>

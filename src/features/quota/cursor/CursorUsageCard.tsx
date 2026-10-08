@@ -28,24 +28,16 @@ export function CursorUsageCard({
   const unknown = t('cursor_usage.not_reported');
 
   return (
-    <section aria-label={t('cursor_usage.title')}>
-      <article className={cardStyles.card}>
-        <div className={styles.header}>
-          <div>
-            <h2 className={styles.title}>{t('cursor_usage.title')}</h2>
-            <p className={styles.description}>{t('cursor_usage.description')}</p>
-          </div>
-          <button
-            type="button"
-            className={cardStyles.actionPill}
-            onClick={onRefresh}
-            disabled={disabled || loading}
-            aria-label={t('cursor_usage.refresh')}
-          >
-            <IconRefreshCw size={14} aria-hidden="true" />
-            {t('cursor_usage.refresh')}
-          </button>
-        </div>
+    <article className={cardStyles.card} aria-label={t('cursor_usage.title')}>
+      <header className={cardStyles.head}>
+        <span className={cardStyles.iconWrap} title="Cursor">
+          <span className={cardStyles.iconFallback}>C</span>
+        </span>
+        <span className={cardStyles.fileName} title={t('cursor_usage.description')}>
+          {t('cursor_usage.account')}
+        </span>
+      </header>
+      <div className={cardStyles.body}>
         {(loading || state.status === 'idle') && (
           <p role="status" className={styles.description}>
             {t(loading ? 'cursor_usage.loading' : 'cursor_usage.disconnected')}
@@ -127,7 +119,24 @@ export function CursorUsageCard({
             {snapshot.partial && <p className={styles.description}>{t('cursor_usage.partial')}</p>}
           </>
         )}
-      </article>
-    </section>
+      </div>
+      <footer className={cardStyles.actionRow}>
+        <button
+          type="button"
+          className={cardStyles.actionPill}
+          onClick={onRefresh}
+          disabled={disabled || loading}
+          aria-label={t('cursor_usage.refresh')}
+          title={t('auth_files.quota_refresh_hint')}
+        >
+          <IconRefreshCw
+            size={13}
+            aria-hidden="true"
+            className={loading ? cardStyles.spinning : undefined}
+          />
+          {t('auth_files.quota_refresh_single')}
+        </button>
+      </footer>
+    </article>
   );
 }

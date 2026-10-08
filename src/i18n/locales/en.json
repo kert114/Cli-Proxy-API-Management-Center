@@ -1546,7 +1546,7 @@
   },
   "quota_management": {
     "search_label": "Search accounts",
-    "search_placeholder": "Search by filename or email",
+    "search_placeholder": "Search by filename, email, or provider",
     "search_empty_title": "No matching accounts",
     "search_empty_desc": "Try another filename or email, or clear the search.",
     "search_clear": "Clear search",
@@ -1556,7 +1556,7 @@
     "sort_label": "Sort",
     "sort_default": "Default",
     "sort_soonest": "Soonest recovery",
-    "meta_credentials": "{{count}} credentials",
+    "meta_credentials": "{{count}} accounts",
     "meta_loaded": "{{count}} loaded",
     "meta_attention": "{{count}} need attention",
     "empty_title": "No quota-capable credentials",
@@ -2238,6 +2238,7 @@
     "auth_error": "Authorization was refused."
   },
   "cursor_usage": {
+    "account": "Cursor CLI account",
     "title": "Cursor account usage",
     "description": "Account and team selected in Cursor CLI. Includes usage from all apps.",
     "refresh": "Refresh Cursor usage",
