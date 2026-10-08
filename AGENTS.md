@@ -52,6 +52,15 @@ Component files use PascalCase, hooks use `useName`, and API modules use domain 
 
 Keep user-facing text in i18n. Preserve keyboard interaction, accessible names, focus behavior, and reduced-motion handling when modifying interactive UI.
 
+### Design consistency
+
+Keep new and changed UI consistent with the existing management dashboard.
+
+- Inspect the closest existing screen or provider before adding UI. Reuse its components, layouts, controls and interaction patterns. Put provider additions into the existing management views.
+- Reuse shared UI components and theme tokens, plus existing feature components and styles. Match font family, size, weight, line height, spacing, dimensions, colors, borders and interaction states. Add custom styles only when the existing design cannot express the requirement.
+- Reuse display logic as well as styling. Quota percentages should use `QuotaUsageRow` and `QuotaMeter` to show remaining quota with the same clamping and unknown-value handling. Keep labels, reset details, refresh actions and loading/error states consistent with comparable provider cards.
+- Verify changed UI beside the existing equivalent in the browser, including light and dark themes and narrow screens. Compare actual typography and layout rather than assuming similar markup looks the same.
+
 ## Testing & Verification
 
 Tests are centralized under `tests/` as `*.test.ts` and use `bun:test`. Existing suites cover pure logic, React server-side static rendering via `renderToStaticMarkup`, and source/contract checks. There is no configured browser DOM test harness; static markup tests do not verify browser interactions. Prefer extracting testable logic and following nearby test patterns rather than introducing a new framework by default.
