@@ -1504,7 +1504,7 @@
   "quota_management": {
     "title": "Quản lý Quota",
     "description": "Theo dõi trạng thái quota OAuth của credential Antigravity, Codex, Claude, Kimi và xAI.",
-    "refresh_all_credentials": "Làm mới mọi credential",
+    "refresh_all_credentials": "Làm mới tất cả",
     "sort_label": "Sắp xếp",
     "sort_default": "Mặc định",
     "sort_soonest": "Sớm khôi phục nhất",
@@ -2242,5 +2242,32 @@
     "unavailable": "Tính năng đặt lại hiện không khả dụng.",
     "rate_limited": "Yêu cầu bị giới hạn tốc độ.",
     "auth_error": "Ủy quyền đã bị từ chối."
+  },
+  "cursor_usage": {
+    "title": "Mức sử dụng tài khoản Cursor",
+    "description": "Tài khoản và nhóm được chọn trong Cursor CLI. Bao gồm mức sử dụng từ mọi ứng dụng.",
+    "refresh": "Làm mới mức sử dụng Cursor",
+    "loading": "Đang tải mức sử dụng Cursor…",
+    "disconnected": "Kết nối để tải mức sử dụng Cursor.",
+    "not_reported": "Không có dữ liệu",
+    "included": "Mức sử dụng trong gói",
+    "auto": "Mức sử dụng Auto",
+    "api": "Mức sử dụng mô hình khác",
+    "included_remaining": "Hạn mức trong gói còn lại",
+    "auto_remaining": "Hạn mức Auto còn lại",
+    "api_remaining": "Hạn mức mô hình khác còn lại",
+    "used": "Đã dùng {{value}}%",
+    "plan": "Gói",
+    "on_demand": "Chi tiêu cá nhân theo nhu cầu",
+    "limit": "Giới hạn chi tiêu cá nhân",
+    "limit_disabled": "Đã tắt",
+    "limit_unlimited": "Không giới hạn",
+    "limit_unavailable": "Không có dữ liệu",
+    "resets": "Đặt lại kỳ thanh toán",
+    "checked": "Thời điểm kiểm tra",
+    "partial": "Một số thông tin về gói hoặc giới hạn chi tiêu không khả dụng.",
+    "error_login": "Đăng nhập Cursor CLI bằng agent login, rồi làm mới.",
+    "error_local": "Mức sử dụng Cursor chỉ khả dụng qua kết nối localhost.",
+    "error_unavailable": "Mức sử dụng Cursor không khả dụng. Hãy thử làm mới."
   }
 }

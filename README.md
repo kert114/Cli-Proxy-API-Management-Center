@@ -100,6 +100,19 @@ bun run build
 
 The output is **`dist/index.html`**, with JavaScript, CSS, and bundled assets inlined. The release workflow renames it to `management.html` for backend hosting.
 
+This fork adds **Cursor account usage** to **Quota Management**. It reads
+`GET /v8/management/observability/usage/cursor` from
+[the CLIProxyAPI fork](https://github.com/kert114/CLIProxyAPI), using the existing
+dashboard management session. It monitors the account and team selected in
+Cursor CLI independently of proxy auth files. Sign in to Cursor CLI with
+`agent login` if prompted; the panel does not log in or change spending limits.
+
+For a local install, copy `dist/index.html` to the proxy's
+`static/management.html` and set `management.disable-auto-update-panel`
+to `true` so the official panel updater preserves this build. Cursor monitoring
+requires a direct localhost connection to that backend. Usage snapshots stay in
+memory, and logout or connection changes clear them and cancel pending reads.
+
 Use `bun run preview` to preview locally. Prefer an HTTP server over opening the file via `file://`, which can encounter browser CORS restrictions.
 
 <details>
