@@ -5,7 +5,6 @@ import { bindQuotaClasses } from '../types';
 import type { CursorUsageState } from './useCursorUsage';
 import cardStyles from '../components/QuotaCard.module.scss';
 import bodyStyles from '../components/QuotaBody.module.scss';
-import styles from './CursorUsageCard.module.scss';
 
 const classes = bindQuotaClasses(bodyStyles, 'CursorUsageCard');
 
@@ -39,84 +38,88 @@ export function CursorUsageCard({
       </header>
       <div className={cardStyles.body}>
         {(loading || state.status === 'idle') && (
-          <p role="status" className={styles.description}>
+          <div role="status" className={classes.quotaMessage}>
             {t(loading ? 'cursor_usage.loading' : 'cursor_usage.disconnected')}
-          </p>
+          </div>
         )}
         {state.status === 'error' && (
-          <p role="status" className={cardStyles.errorStrip}>
+          <div role="alert" className={cardStyles.errorStrip}>
             {t(`cursor_usage.error_${state.reason}`)}
-          </p>
+          </div>
         )}
         {snapshot && (
           <>
-            <div className={styles.metrics}>
-              {(
-                [
-                  ['included', snapshot.included.percentUsed],
-                  ['auto', snapshot.included.autoPercentUsed],
-                  ['api', snapshot.included.apiPercentUsed],
-                ] as const
-              ).map(([id, used]) => {
-                const remaining = used === null ? null : Math.max(0, 100 - used);
-                return (
-                  <div key={id} className={classes.quotaRow}>
-                    <div className={classes.quotaRowHeader}>
-                      <span className={classes.quotaModel}>{t(`cursor_usage.${id}`)}</span>
+            <div className={classes.codexPlan}>
+              <span className={classes.codexPlanItem}>
+                <span className={classes.codexPlanLabel}>{t('cursor_usage.plan')}</span>
+                <span className={classes.codexPlanValue}>{snapshot.plan ?? unknown}</span>
+              </span>
+              <span className={classes.codexPlanItem}>
+                <span className={classes.codexPlanLabel}>{t('cursor_usage.on_demand')}</span>
+                <span className={classes.codexPlanValue}>
+                  {snapshot.onDemand ? currency.format(snapshot.onDemand.usedUsd) : unknown}
+                </span>
+              </span>
+              <span className={classes.codexPlanItem}>
+                <span className={classes.codexPlanLabel}>{t('cursor_usage.limit')}</span>
+                <span className={classes.codexPlanValue}>
+                  {snapshot.onDemand?.limit.kind === 'fixed'
+                    ? currency.format(snapshot.onDemand.limit.usd)
+                    : t(`cursor_usage.limit_${snapshot.onDemand?.limit.kind ?? 'unavailable'}`)}
+                </span>
+              </span>
+              <span className={classes.codexPlanItem}>
+                <span className={classes.codexPlanLabel}>{t('cursor_usage.resets')}</span>
+                <span className={classes.codexPlanValue}>
+                  {snapshot.resetsAt ? (
+                    <time dateTime={snapshot.resetsAt}>{date(snapshot.resetsAt)}</time>
+                  ) : (
+                    unknown
+                  )}
+                </span>
+              </span>
+              <span className={classes.codexPlanItem}>
+                <span className={classes.codexPlanLabel}>{t('cursor_usage.checked')}</span>
+                <span className={classes.codexPlanValue}>
+                  <time dateTime={snapshot.checkedAt}>{date(snapshot.checkedAt)}</time>
+                </span>
+              </span>
+            </div>
+            {(
+              [
+                ['included', snapshot.included.percentUsed],
+                ['auto', snapshot.included.autoPercentUsed],
+                ['api', snapshot.included.apiPercentUsed],
+              ] as const
+            ).map(([id, used], index) => {
+              const remaining = used === null ? null : Math.max(0, 100 - used);
+              return (
+                <div key={id} className={classes.quotaRow}>
+                  <div className={classes.quotaRowHeader}>
+                    <span className={classes.quotaModel}>{t(`cursor_usage.${id}`)}</span>
+                    <div className={classes.quotaMeta}>
                       <span className={classes.quotaPercent}>
                         {used === null
                           ? unknown
                           : t('cursor_usage.used', { value: number.format(used) })}
                       </span>
                     </div>
-                    <div
-                      role={remaining === null ? undefined : 'meter'}
-                      aria-label={t(`cursor_usage.${id}_remaining`)}
-                      aria-valuemin={remaining === null ? undefined : 0}
-                      aria-valuemax={remaining === null ? undefined : 100}
-                      aria-valuenow={remaining ?? undefined}
-                    >
-                      <QuotaMeter percent={remaining} classes={classes} />
-                    </div>
                   </div>
-                );
-              })}
-            </div>
-            <dl className={styles.details}>
-              <div>
-                <dt>{t('cursor_usage.plan')}</dt>
-                <dd>{snapshot.plan ?? unknown}</dd>
-              </div>
-              <div>
-                <dt>{t('cursor_usage.on_demand')}</dt>
-                <dd>{snapshot.onDemand ? currency.format(snapshot.onDemand.usedUsd) : unknown}</dd>
-              </div>
-              <div>
-                <dt>{t('cursor_usage.limit')}</dt>
-                <dd>
-                  {snapshot.onDemand?.limit.kind === 'fixed'
-                    ? currency.format(snapshot.onDemand.limit.usd)
-                    : t(`cursor_usage.limit_${snapshot.onDemand?.limit.kind ?? 'unavailable'}`)}
-                </dd>
-              </div>
-              <div>
-                <dt>{t('cursor_usage.resets')}</dt>
-                <dd>
-                  {snapshot.resetsAt ? (
-                    <time dateTime={snapshot.resetsAt}>{date(snapshot.resetsAt)}</time>
-                  ) : (
-                    unknown
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>{t('cursor_usage.checked')}</dt>
-                <dd>
-                  <time dateTime={snapshot.checkedAt}>{date(snapshot.checkedAt)}</time>
-                </dd>
-              </div>
-            </dl>
-            {snapshot.partial && <p className={styles.description}>{t('cursor_usage.partial')}</p>}
+                  <div
+                    role={remaining === null ? undefined : 'meter'}
+                    aria-label={t(`cursor_usage.${id}_remaining`)}
+                    aria-valuemin={remaining === null ? undefined : 0}
+                    aria-valuemax={remaining === null ? undefined : 100}
+                    aria-valuenow={remaining ?? undefined}
+                  >
+                    <QuotaMeter percent={remaining} classes={classes} index={index} />
+                  </div>
+                </div>
+              );
+            })}
+            {snapshot.partial && (
+              <div className={classes.quotaMessage}>{t('cursor_usage.partial')}</div>
+            )}
           </>
         )}
       </div>
