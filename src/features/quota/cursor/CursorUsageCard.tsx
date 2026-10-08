@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { IconRefreshCw } from '@/components/ui/icons';
-import { QuotaMeter } from '../components/QuotaMeter';
+import { QuotaUsageRow } from '../components/QuotaUsageRow';
 import { bindQuotaClasses } from '../types';
 import type { CursorUsageState } from './useCursorUsage';
 import cardStyles from '../components/QuotaCard.module.scss';
@@ -19,7 +19,6 @@ export function CursorUsageCard({
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage;
-  const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const currency = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' });
   const date = (value: string) => new Date(value).toLocaleString(locale);
   const snapshot = state.status === 'success' ? state.snapshot : null;
@@ -91,32 +90,17 @@ export function CursorUsageCard({
                 ['auto', snapshot.included.autoPercentUsed],
                 ['api', snapshot.included.apiPercentUsed],
               ] as const
-            ).map(([id, used], index) => {
-              const remaining = used === null ? null : Math.max(0, 100 - used);
-              return (
-                <div key={id} className={classes.quotaRow}>
-                  <div className={classes.quotaRowHeader}>
-                    <span className={classes.quotaModel}>{t(`cursor_usage.${id}`)}</span>
-                    <div className={classes.quotaMeta}>
-                      <span className={classes.quotaPercent}>
-                        {used === null
-                          ? unknown
-                          : t('cursor_usage.used', { value: number.format(used) })}
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    role={remaining === null ? undefined : 'meter'}
-                    aria-label={t(`cursor_usage.${id}_remaining`)}
-                    aria-valuemin={remaining === null ? undefined : 0}
-                    aria-valuemax={remaining === null ? undefined : 100}
-                    aria-valuenow={remaining ?? undefined}
-                  >
-                    <QuotaMeter percent={remaining} classes={classes} index={index} />
-                  </div>
-                </div>
-              );
-            })}
+            ).map(([id, used], index) => (
+              <QuotaUsageRow
+                key={id}
+                label={t(`cursor_usage.${id}`)}
+                usedPercent={used}
+                classes={classes}
+                index={index}
+                unknownLabel={unknown}
+                meterLabel={t(`cursor_usage.${id}_remaining`)}
+              />
+            ))}
             {snapshot.partial && (
               <div className={classes.quotaMessage}>{t('cursor_usage.partial')}</div>
             )}
