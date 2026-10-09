@@ -1,6 +1,5 @@
 /**
- * Codex 额度渲染体：套餐 chip 行（elite=Pro 20x 液态铂金 / premium=金卡）、
- * 重置积分明细、用量窗口水位条。
+ * Codex quota body: plan badges, reset credits, and usage windows.
  */
 
 import { useMemo } from 'react';
@@ -18,13 +17,13 @@ import {
 import { resolveTimeZoneLabel } from '@/utils/time/timezone';
 import { formatDateTimeValue } from '@/utils/format';
 import { useNow } from '@/hooks/useNow';
-import { QuotaMeter } from '../../components/QuotaMeter';
+import { QuotaUsageRow } from '../../components/QuotaUsageRow';
 import { QuotaResetLabel } from '../../components/QuotaResetLabel';
 import { collectQuotaRowInstants, pickUrgentRowId, resetCreditRowId } from '../../resetSchedule';
 import type { QuotaBodyProps, QuotaClassMap } from '../../types';
 
 const getPlanValueClass = (planType: string | null, classes: QuotaClassMap): string => {
-  // elite/premium 顺序契约由 resolvePlanTier 承载（tests/quotaPlanTier.test.ts 守护）。
+  // resolvePlanTier owns the elite/premium ordering contract (quotaPlanTier.test.ts).
   const tier = resolvePlanTier(planType);
   if (tier === 'elite') return classes.elitePlanValue;
   if (tier === 'premium') return classes.premiumPlanValue;
@@ -175,11 +174,6 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
         <div className={classes.quotaMessage}>{t('codex_quota.empty_windows')}</div>
       ) : (
         windows.map((window, index) => {
-          const used = window.usedPercent;
-          const clampedUsed = used === null ? null : Math.max(0, Math.min(100, used));
-          const remaining =
-            clampedUsed === null ? null : Math.max(0, Math.min(100, 100 - clampedUsed));
-          const percentLabel = remaining === null ? '--' : `${Math.round(remaining)}%`;
           const windowLabel = window.labelKey
             ? t(window.labelKey, window.labelParams as Record<string, string | number>)
             : window.label;
@@ -188,22 +182,18 @@ export function CodexQuotaBody({ quota, classes }: QuotaBodyProps<CodexQuotaStat
           const soon = window.id === soonestRowId;
 
           return (
-            <div
+            <QuotaUsageRow
               key={window.id}
-              className={classes.quotaRow}
+              label={windowLabel}
+              usedPercent={window.usedPercent}
+              classes={classes}
+              index={index}
               title={soon ? t('quota_management.soonest_row_hint') : undefined}
             >
-              <div className={classes.quotaRowHeader}>
-                <span className={classes.quotaModel}>{windowLabel}</span>
-                <div className={classes.quotaMeta}>
-                  <span className={classes.quotaPercent}>{percentLabel}</span>
-                  {resetDisplay && (
-                    <QuotaResetLabel display={resetDisplay} classes={classes} soon={soon} />
-                  )}
-                </div>
-              </div>
-              <QuotaMeter percent={remaining} classes={classes} index={index} />
-            </div>
+              {resetDisplay && (
+                <QuotaResetLabel display={resetDisplay} classes={classes} soon={soon} />
+              )}
+            </QuotaUsageRow>
           );
         })
       )}

@@ -1,6 +1,5 @@
 /**
- * 额度页纯逻辑：文件归类、tab 过滤、计数、分页。
- * React-free —— 由 tests/quotaPageLogic.test.ts 直接消费。
+ * React-free account classification, filtering, counting and pagination.
  */
 
 import type { AuthFileItem } from '@/types';
@@ -29,6 +28,8 @@ export interface QuotaFileEntry {
   type: QuotaProviderType;
 }
 
+export type QuotaWorkbenchEntry = QuotaFileEntry | { type: 'cursor'; label: string };
+
 /** A refresh-all intent belongs to the session that requested a successful list read. */
 export function canRefreshQuotaAfterList(
   requestedSession: number,
@@ -46,8 +47,7 @@ export const resolveQuotaProviderType = (file: AuthFileItem): QuotaProviderType 
   QUOTA_TAB_ORDER.find((type) => QUOTA_FILTER_MAP[type](file)) ?? null;
 
 /**
- * 把文件列表归类为额度条目：不支持额度或已停用的文件被过滤，
- * 结果按 QUOTA_TAB_ORDER 分组排列（'全部' tab 的卡片顺序即由此决定）。
+ * Classify supported, enabled credentials in provider order.
  */
 export function classifyQuotaFiles(files: AuthFileItem[]): QuotaFileEntry[] {
   const groups = new Map<QuotaProviderType, QuotaFileEntry[]>(
@@ -61,19 +61,26 @@ export function classifyQuotaFiles(files: AuthFileItem[]): QuotaFileEntry[] {
   return QUOTA_TAB_ORDER.flatMap((type) => groups.get(type) ?? []);
 }
 
-export function filterEntriesByTab(entries: QuotaFileEntry[], tab: QuotaTabId): QuotaFileEntry[] {
+export function filterEntriesByTab<T extends QuotaWorkbenchEntry>(
+  entries: T[],
+  tab: QuotaTabId
+): T[] {
   if (tab === 'all') return entries;
   return entries.filter((entry) => entry.type === tab);
 }
 
 /** Search public account identifiers only; account may contain an API key. */
-export function filterEntriesBySearch(entries: QuotaFileEntry[], search: string): QuotaFileEntry[] {
+export function filterEntriesBySearch<T extends QuotaWorkbenchEntry>(
+  entries: T[],
+  search: string
+): T[] {
   const query = search.trim().toLowerCase();
   if (!query) return entries;
-  return entries.filter(({ file }) =>
-    [file.name, file.email].some(
-      (value) => typeof value === 'string' && value.toLowerCase().includes(query)
-    )
+  return entries.filter((entry) =>
+    (entry.type === 'cursor'
+      ? [entry.type, entry.label]
+      : [entry.type, entry.file.name, entry.file.email]
+    ).some((value) => typeof value === 'string' && value.toLowerCase().includes(query))
   );
 }
 
@@ -87,17 +94,17 @@ export function filterEntriesBySearch(entries: QuotaFileEntry[], search: string)
  * Credentials with no instant — not loaded yet, failed, or reporting no
  * upcoming reset — sink to the bottom rather than sorting as "now". They keep
  * their incoming provider-grouped order, so the unloaded tail still reads like
- * the default view instead of an arbitrary shuffle. Because loading is
- * click-to-fetch, that tail is most of the list until the user asks for data.
+ * the default view instead of an arbitrary shuffle. The page fetches on open,
+ * so this tail is only the credentials that have not returned yet.
  *
  * The original index is the final tiebreak, making stability an asserted
  * property rather than an assumption about the engine's sort.
  */
-export function sortQuotaEntries(
-  entries: QuotaFileEntry[],
+export function sortQuotaEntries<T extends QuotaWorkbenchEntry>(
+  entries: T[],
   mode: QuotaSortMode,
-  resolveNextRecoveryMs: (entry: QuotaFileEntry) => number | null
-): QuotaFileEntry[] {
+  resolveNextRecoveryMs: (entry: T) => number | null
+): T[] {
   if (mode !== 'soonest') return [...entries];
 
   // Decorate once — resolving pokes at provider-shaped state per entry.
@@ -112,13 +119,15 @@ export function sortQuotaEntries(
     .map((decorated) => decorated.entry);
 }
 
-export function buildTabCounts(entries: QuotaFileEntry[]): Record<string, number> {
+export function buildTabCounts(
+  entries: readonly { type: Exclude<QuotaTabId, 'all'> }[]
+): Record<string, number> {
   const counts: Record<string, number> = { all: entries.length };
   for (const type of QUOTA_TAB_ORDER) {
     counts[type] = 0;
   }
   for (const entry of entries) {
-    counts[entry.type] += 1;
+    counts[entry.type] = (counts[entry.type] ?? 0) + 1;
   }
   return counts;
 }
@@ -135,7 +144,7 @@ export interface QuotaPagination<T> {
   totalPages: number;
 }
 
-/** 页码越界时收敛到有效区间（列表缩短后停留在最后一页而不是空页）。 */
+/** Clamp the page after a shrinking account list. */
 export function paginate<T>(items: T[], page: number, pageSize: number): QuotaPagination<T> {
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const currentPage = Math.min(Math.max(1, page), totalPages);

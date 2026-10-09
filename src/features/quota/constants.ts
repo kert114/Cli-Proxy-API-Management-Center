@@ -1,6 +1,6 @@
 import type { QuotaProviderType } from './providers/types';
 
-/** tab 顺序 = 旧页五分区的纵向顺序，'全部' tab 下卡片也按此分组排列。 */
+/** Credential provider order used for classification and cache pruning. */
 export const QUOTA_TAB_ORDER: readonly QuotaProviderType[] = [
   'claude',
   'antigravity',
@@ -11,15 +11,20 @@ export const QUOTA_TAB_ORDER: readonly QuotaProviderType[] = [
   'meta',
 ];
 
-export type QuotaTabId = 'all' | QuotaProviderType;
+export type QuotaTabId = 'all' | QuotaProviderType | 'cursor';
 
-/** 页级分页固定 20/页，同时把「刷新全部」的上游并发限制在 20。 */
+export const QUOTA_WORKBENCH_ORDER: readonly Exclude<QuotaTabId, 'all'>[] = [
+  'cursor',
+  ...QUOTA_TAB_ORDER,
+];
+
+/** Twenty accounts per page also bounds refresh-all upstream concurrency. */
 export const QUOTA_PAGE_SIZE = 20;
 
-/** 卡片排序：默认 = provider 分组序；soonest = 最快恢复优先。 */
+/** Sort by provider order or the next recovery time. */
 export const QUOTA_SORT_MODES = ['default', 'soonest'] as const;
 
 export type QuotaSortMode = (typeof QUOTA_SORT_MODES)[number];
 
-/** 与 useRevealGroup 的 GROUP_MAX_TOTAL 一致：卡片级联总预算 360ms。 */
+/** Match useRevealGroup's total entrance budget. */
 export const CARD_ENTRANCE_BUDGET_MS = 360;

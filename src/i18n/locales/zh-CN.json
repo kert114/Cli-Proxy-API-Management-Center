@@ -1545,7 +1545,7 @@
   },
   "quota_management": {
     "search_label": "搜索账号",
-    "search_placeholder": "按文件名或邮箱搜索",
+    "search_placeholder": "按文件名、邮箱或提供商搜索",
     "search_empty_title": "没有匹配的账号",
     "search_empty_desc": "请尝试其他文件名或邮箱，或清空搜索。",
     "search_clear": "清空搜索",
@@ -1555,7 +1555,7 @@
     "sort_label": "排序",
     "sort_default": "默认",
     "sort_soonest": "最快恢复优先",
-    "meta_credentials": "{{count}} 个凭证",
+    "meta_credentials": "{{count}} 个账户",
     "meta_loaded": "{{count}} 个已加载",
     "meta_attention": "{{count}} 个需关注",
     "empty_title": "暂无可查额度的凭证",
@@ -2237,6 +2237,7 @@
     "auth_error": "授权被拒绝。"
   },
   "cursor_usage": {
+    "account": "Cursor CLI 账户",
     "title": "Cursor 账户用量",
     "description": "Cursor CLI 中选择的账户和团队，包含所有应用的用量。",
     "refresh": "刷新 Cursor 用量",

@@ -56,6 +56,11 @@ describe('quota ui state', () => {
     expect(readQuotaUiState()).toEqual({ tab: 'devin', sortMode: 'soonest' });
   });
 
+  test('retains the Cursor provider tab across visits', () => {
+    writeQuotaUiState({ tab: 'cursor', sortMode: 'soonest' });
+    expect(readQuotaUiState()).toEqual({ tab: 'cursor', sortMode: 'soonest' });
+  });
+
   test('writing one preference preserves the other', () => {
     writeQuotaUiState({ sortMode: 'soonest' });
     writeQuotaUiState({ tab: 'kimi' });

@@ -1,7 +1,8 @@
 /**
- * Provider quota workbench and independent Cursor account monitoring.
+ * Provider quota workbench for credentials and the local Cursor account.
  * Credential caches are isolated by session and pruned after list updates.
- * This page owns the global refresh handler for both credentials and Cursor.
+ * This page refreshes every credential when it opens and owns manual refresh for
+ * both credentials and Cursor.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -29,6 +30,7 @@ import {
   QUOTA_PAGE_SIZE,
   QUOTA_SORT_MODES,
   QUOTA_TAB_ORDER,
+  QUOTA_WORKBENCH_ORDER,
   type QuotaSortMode,
   type QuotaTabId,
 } from './constants';
@@ -41,17 +43,18 @@ import {
   paginate,
   sortQuotaEntries,
   type QuotaFileEntry,
+  type QuotaWorkbenchEntry,
 } from './logic';
 import { nextRecoveryMs } from './resetSchedule';
 import { QUOTA_ADAPTERS, getQuotaSetter, type QuotaCardState } from './providers';
 import type { QuotaProviderType } from './providers/types';
-import { useDevinQuotaAutoLoad } from './providers/devin/useDevinQuotaAutoLoad';
+import { useQuotaAutoLoad } from './hooks/useQuotaAutoLoad';
 import { useQuotaActions } from './hooks/useQuotaActions';
 import { useQuotaBatchLoader } from './hooks/useQuotaBatchLoader';
 import { readQuotaUiState, writeQuotaUiState } from './uiState';
 import styles from './QuotaPage.module.scss';
 
-const TAB_IDS: string[] = ['all', ...QUOTA_TAB_ORDER];
+const TAB_IDS: string[] = ['all', ...QUOTA_WORKBENCH_ORDER];
 const SKELETON_CARD_COUNT = 6;
 
 /**
@@ -162,10 +165,18 @@ export function QuotaPage() {
   const sortNow = sortMode === 'default' ? 0 : tick;
 
   const entries = useMemo(() => classifyQuotaFiles(files), [files]);
-  const tabCounts = useMemo(() => buildTabCounts(entries), [entries]);
+  const cursorLabel = t('cursor_usage.account');
+  const workbenchEntries = useMemo<QuotaWorkbenchEntry[]>(
+    () =>
+      [...entries, { type: 'cursor' as const, label: cursorLabel }].sort(
+        (a, b) => QUOTA_WORKBENCH_ORDER.indexOf(a.type) - QUOTA_WORKBENCH_ORDER.indexOf(b.type)
+      ),
+    [entries, cursorLabel]
+  );
+  const tabCounts = useMemo(() => buildTabCounts(workbenchEntries), [workbenchEntries]);
   const filteredEntries = useMemo(
-    () => filterEntriesBySearch(filterEntriesByTab(entries, tab), search),
-    [entries, tab, search]
+    () => filterEntriesBySearch(filterEntriesByTab(workbenchEntries, tab), search),
+    [workbenchEntries, tab, search]
   );
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
@@ -173,8 +184,13 @@ export function QuotaPage() {
   }, []);
 
   const resolveNextRecovery = useCallback(
-    (entry: QuotaFileEntry) => nextRecoveryMs(entry.type, getQuota(entry), sortNow),
-    [getQuota, sortNow]
+    (entry: QuotaWorkbenchEntry) => {
+      if (entry.type !== 'cursor') return nextRecoveryMs(entry.type, getQuota(entry), sortNow);
+      const resetAt = cursorState.status === 'success' ? cursorState.snapshot.resetsAt : null;
+      const atMs = resetAt ? Date.parse(resetAt) : NaN;
+      return Number.isFinite(atMs) && atMs > sortNow ? atMs : null;
+    },
+    [getQuota, sortNow, cursorState]
   );
   // Sort before pagination so recovery ordering covers all credentials.
   const sortedEntries = useMemo(
@@ -185,6 +201,10 @@ export function QuotaPage() {
   const { pageItems, currentPage, totalPages } = useMemo(
     () => paginate(sortedEntries, page, QUOTA_PAGE_SIZE),
     [sortedEntries, page]
+  );
+  const credentialPageItems = useMemo(
+    () => pageItems.filter((entry) => entry.type !== 'cursor'),
+    [pageItems]
   );
 
   const handleTabChange = useCallback((next: string) => {
@@ -206,15 +226,15 @@ export function QuotaPage() {
   );
 
   const { loadedCount, attentionCount } = useMemo(() => {
-    let loaded = 0;
-    let attention = 0;
+    let loaded = cursorState.status === 'success' ? 1 : 0;
+    let attention = cursorState.status === 'error' ? 1 : 0;
     entries.forEach((entry) => {
       const status = quotaByType[entry.type][getQuotaCacheKey(entry.file)]?.status;
       if (status === 'success') loaded += 1;
       else if (status === 'error') attention += 1;
     });
     return { loadedCount: loaded, attentionCount: attention };
-  }, [entries, quotaByType]);
+  }, [entries, quotaByType, cursorState.status]);
 
   // Prune caches only after the credential list has settled.
   useEffect(() => {
@@ -275,12 +295,20 @@ export function QuotaPage() {
         disableControls
       )
     ) {
-      void loadQuota(pageItems);
+      void loadQuota(credentialPageItems);
     }
-  }, [disableControls, error, filesGeneration, loading, loadQuota, pageItems, sessionGeneration]);
+  }, [
+    disableControls,
+    error,
+    filesGeneration,
+    loading,
+    loadQuota,
+    credentialPageItems,
+    sessionGeneration,
+  ]);
 
-  useDevinQuotaAutoLoad(
-    pageItems,
+  useQuotaAutoLoad(
+    entries,
     disableControls ||
       loading ||
       batchLoading ||
@@ -313,18 +341,12 @@ export function QuotaPage() {
   return (
     <div className={styles.page} ref={revealRef}>
       <QuotaHeader
-        totalCount={entries.length}
+        totalCount={workbenchEntries.length}
         loadedCount={loadedCount}
         attentionCount={attentionCount}
         refreshing={loading || batchLoading || cursorState.status === 'loading'}
         disableControls={disableControls}
         onRefreshAll={handleRefreshAll}
-      />
-
-      <CursorUsageCard
-        state={cursorState}
-        disabled={disableControls}
-        onRefresh={refreshCursorUsage}
       />
 
       <section className={styles.workbench}>
@@ -383,25 +405,19 @@ export function QuotaPage() {
           </div>
         )}
 
-        {loading ? (
-          <div className={styles.grid} aria-hidden="true">
-            {Array.from({ length: SKELETON_CARD_COUNT }, (_, index) => (
-              <Skeleton key={index} height={168} rounded={14} />
-            ))}
-          </div>
-        ) : isEmpty ? (
+        {isEmpty ? (
           <EmptyState
             title={
               search.trim()
                 ? t('quota_management.search_empty_title')
-                : tab === 'all'
+                : tab === 'all' || tab === 'cursor'
                   ? t('quota_management.empty_title')
                   : t(`${QUOTA_ADAPTERS[tab].i18nPrefix}.empty_title`)
             }
             description={
               search.trim()
                 ? t('quota_management.search_empty_desc')
-                : tab === 'all'
+                : tab === 'all' || tab === 'cursor'
                   ? t('quota_management.empty_desc')
                   : t(`${QUOTA_ADAPTERS[tab].i18nPrefix}.empty_desc`)
             }
@@ -419,19 +435,32 @@ export function QuotaPage() {
           />
         ) : (
           <div className={styles.grid}>
-            {pageItems.map((entry, index) => (
-              <QuotaCard
-                key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
-                entry={entry}
-                quota={getQuota(entry)}
-                resolvedTheme={resolvedTheme}
-                canRefresh={canUseActions && !entry.file.disabled}
-                resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
-                entranceDelayMs={cardEntranceDelay(index)}
-                onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
-                onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
-              />
-            ))}
+            {pageItems.map((entry, index) =>
+              entry.type === 'cursor' ? (
+                <CursorUsageCard
+                  key="cursor"
+                  state={cursorState}
+                  disabled={disableControls}
+                  onRefresh={refreshCursorUsage}
+                />
+              ) : loading ? null : (
+                <QuotaCard
+                  key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
+                  entry={entry}
+                  quota={getQuota(entry)}
+                  resolvedTheme={resolvedTheme}
+                  canRefresh={canUseActions && !entry.file.disabled}
+                  resetting={resettingQuotaName === getQuotaCacheKey(entry.file)}
+                  entranceDelayMs={cardEntranceDelay(index)}
+                  onRefresh={() => void refreshQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
+                  onReset={() => resetQuota(entry.file, QUOTA_ADAPTERS[entry.type])}
+                />
+              )
+            )}
+            {loading &&
+              Array.from({ length: SKELETON_CARD_COUNT }, (_, index) => (
+                <Skeleton key={`loading-${index}`} height={168} rounded={14} />
+              ))}
           </div>
         )}
 
@@ -465,7 +494,7 @@ export function QuotaPage() {
 
         {/* Bound the timeline to credentials on the current page. */}
         <QuotaTimeline
-          entries={pageItems}
+          entries={credentialPageItems}
           quotaFor={getQuota}
           displayNameFor={displayNameFor}
           resolvedTheme={resolvedTheme}
