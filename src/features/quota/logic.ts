@@ -79,9 +79,8 @@ export function filterEntriesBySearch<T extends QuotaWorkbenchEntry>(
   return entries.filter((entry) =>
     (entry.type === 'cursor'
       ? [entry.type, entry.label]
-      : [entry.type, entry.file.name, entry.file.email]).some(
-      (value) => typeof value === 'string' && value.toLowerCase().includes(query)
-    )
+      : [entry.type, entry.file.name, entry.file.email]
+    ).some((value) => typeof value === 'string' && value.toLowerCase().includes(query))
   );
 }
 
@@ -95,8 +94,8 @@ export function filterEntriesBySearch<T extends QuotaWorkbenchEntry>(
  * Credentials with no instant — not loaded yet, failed, or reporting no
  * upcoming reset — sink to the bottom rather than sorting as "now". They keep
  * their incoming provider-grouped order, so the unloaded tail still reads like
- * the default view instead of an arbitrary shuffle. Because loading is
- * click-to-fetch, that tail is most of the list until the user asks for data.
+ * the default view instead of an arbitrary shuffle. The page fetches on open,
+ * so this tail is only the credentials that have not returned yet.
  *
  * The original index is the final tiebreak, making stability an asserted
  * property rather than an assumption about the engine's sort.

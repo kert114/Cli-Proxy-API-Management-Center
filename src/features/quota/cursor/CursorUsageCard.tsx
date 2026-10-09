@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { IconRefreshCw } from '@/components/ui/icons';
-import { QuotaUsageRow } from '../components/QuotaUsageRow';
 import { bindQuotaClasses } from '../types';
+import { CursorUsageBody } from './CursorUsageBody';
 import type { CursorUsageState } from './useCursorUsage';
 import cardStyles from '../components/QuotaCard.module.scss';
 import bodyStyles from '../components/QuotaBody.module.scss';
@@ -17,13 +17,9 @@ export function CursorUsageCard({
   disabled: boolean;
   onRefresh: () => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.resolvedLanguage;
-  const currency = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' });
-  const date = (value: string) => new Date(value).toLocaleString(locale);
+  const { t } = useTranslation();
   const snapshot = state.status === 'success' ? state.snapshot : null;
   const loading = state.status === 'loading';
-  const unknown = t('cursor_usage.not_reported');
 
   return (
     <article className={cardStyles.card} aria-label={t('cursor_usage.title')}>
@@ -46,66 +42,7 @@ export function CursorUsageCard({
             {t(`cursor_usage.error_${state.reason}`)}
           </div>
         )}
-        {snapshot && (
-          <>
-            <div className={classes.codexPlan}>
-              <span className={classes.codexPlanItem}>
-                <span className={classes.codexPlanLabel}>{t('cursor_usage.plan')}</span>
-                <span className={classes.codexPlanValue}>{snapshot.plan ?? unknown}</span>
-              </span>
-              <span className={classes.codexPlanItem}>
-                <span className={classes.codexPlanLabel}>{t('cursor_usage.on_demand')}</span>
-                <span className={classes.codexPlanValue}>
-                  {snapshot.onDemand ? currency.format(snapshot.onDemand.usedUsd) : unknown}
-                </span>
-              </span>
-              <span className={classes.codexPlanItem}>
-                <span className={classes.codexPlanLabel}>{t('cursor_usage.limit')}</span>
-                <span className={classes.codexPlanValue}>
-                  {snapshot.onDemand?.limit.kind === 'fixed'
-                    ? currency.format(snapshot.onDemand.limit.usd)
-                    : t(`cursor_usage.limit_${snapshot.onDemand?.limit.kind ?? 'unavailable'}`)}
-                </span>
-              </span>
-              <span className={classes.codexPlanItem}>
-                <span className={classes.codexPlanLabel}>{t('cursor_usage.resets')}</span>
-                <span className={classes.codexPlanValue}>
-                  {snapshot.resetsAt ? (
-                    <time dateTime={snapshot.resetsAt}>{date(snapshot.resetsAt)}</time>
-                  ) : (
-                    unknown
-                  )}
-                </span>
-              </span>
-              <span className={classes.codexPlanItem}>
-                <span className={classes.codexPlanLabel}>{t('cursor_usage.checked')}</span>
-                <span className={classes.codexPlanValue}>
-                  <time dateTime={snapshot.checkedAt}>{date(snapshot.checkedAt)}</time>
-                </span>
-              </span>
-            </div>
-            {(
-              [
-                ['included', snapshot.included.percentUsed],
-                ['auto', snapshot.included.autoPercentUsed],
-                ['api', snapshot.included.apiPercentUsed],
-              ] as const
-            ).map(([id, used], index) => (
-              <QuotaUsageRow
-                key={id}
-                label={t(`cursor_usage.${id}`)}
-                usedPercent={used}
-                classes={classes}
-                index={index}
-                unknownLabel={unknown}
-                meterLabel={t(`cursor_usage.${id}_remaining`)}
-              />
-            ))}
-            {snapshot.partial && (
-              <div className={classes.quotaMessage}>{t('cursor_usage.partial')}</div>
-            )}
-          </>
-        )}
+        {snapshot && <CursorUsageBody snapshot={snapshot} classes={classes} />}
       </div>
       <footer className={cardStyles.actionRow}>
         <button

@@ -1,7 +1,8 @@
 /**
  * Provider quota workbench for credentials and the local Cursor account.
  * Credential caches are isolated by session and pruned after list updates.
- * This page owns the global refresh handler for both credentials and Cursor.
+ * This page refreshes every credential when it opens and owns manual refresh for
+ * both credentials and Cursor.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -47,7 +48,7 @@ import {
 import { nextRecoveryMs } from './resetSchedule';
 import { QUOTA_ADAPTERS, getQuotaSetter, type QuotaCardState } from './providers';
 import type { QuotaProviderType } from './providers/types';
-import { useDevinQuotaAutoLoad } from './providers/devin/useDevinQuotaAutoLoad';
+import { useQuotaAutoLoad } from './hooks/useQuotaAutoLoad';
 import { useQuotaActions } from './hooks/useQuotaActions';
 import { useQuotaBatchLoader } from './hooks/useQuotaBatchLoader';
 import { readQuotaUiState, writeQuotaUiState } from './uiState';
@@ -306,8 +307,8 @@ export function QuotaPage() {
     sessionGeneration,
   ]);
 
-  useDevinQuotaAutoLoad(
-    credentialPageItems,
+  useQuotaAutoLoad(
+    entries,
     disableControls ||
       loading ||
       batchLoading ||

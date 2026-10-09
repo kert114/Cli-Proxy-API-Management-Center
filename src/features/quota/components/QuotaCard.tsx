@@ -1,10 +1,10 @@
 /**
- * 额度卡片：头部（提供商图标 + mono 文件名）+ 四态 body + 动作 footer。
+ * Quota card: header (provider icon + mono filename), four body states, and an action footer.
  *
- * - idle：整个 body 是一个点击加载按钮（上游直连有速率考虑，不自动拉取）；
- * - loading：双幽灵行骨架（aria-busy，文字等价视觉隐藏）；
- * - error：失败色条 + footer 刷新即重试；
- * - success：provider Body（穿 QuotaBody.module.scss 全页外衣）。
+ * - idle: click-to-load, used before the page visit refresh starts or when refresh is unavailable;
+ * - loading: two ghost rows (aria-busy, with visually hidden text);
+ * - error: failure strip; the footer refresh retries;
+ * - success: provider body wearing QuotaBody.module.scss.
  */
 
 import { useState, type CSSProperties } from 'react';

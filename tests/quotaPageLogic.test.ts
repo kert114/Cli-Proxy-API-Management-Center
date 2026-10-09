@@ -213,7 +213,7 @@ describe('sortQuotaEntries', () => {
   });
 
   test('sinks credentials with no instant, keeping their provider-grouped order', () => {
-    // Loading is click-to-fetch, so an unloaded tail is the normal case.
+    // Credentials that have not reported a reset stay in provider order.
     const sorted = sortQuotaEntries(
       entries,
       'soonest',
