@@ -4,6 +4,7 @@ import { useCountUp } from '@/hooks/motion';
 import styles from './QuotaHeader.module.scss';
 
 export type QuotaHeaderProps = {
+  embedded?: boolean;
   totalCount: number;
   loadedCount: number;
   attentionCount: number;
@@ -20,18 +21,26 @@ export type QuotaHeaderProps = {
  * （标题 0ms → meta 70ms → 动作 140ms → tabs 210ms）。
  */
 export function QuotaHeader(props: QuotaHeaderProps) {
-  const { totalCount, loadedCount, attentionCount, refreshing, disableControls, onRefreshAll } =
-    props;
+  const {
+    embedded,
+    totalCount,
+    loadedCount,
+    attentionCount,
+    refreshing,
+    disableControls,
+    onRefreshAll,
+  } = props;
   const { t } = useTranslation();
   // 批量结果陆续落地时，「已加载」是页面上唯一滚动的数字
   const displayLoadedCount = useCountUp(loadedCount);
+  const Heading = embedded ? 'h2' : 'h1';
 
   return (
     <header className={styles.header}>
       <div className={styles.copy}>
-        <h1 className={styles.title} data-reveal>
+        <Heading className={styles.title} data-reveal>
           {t('quota_management.title')}
-        </h1>
+        </Heading>
         <p className={styles.meta} data-reveal>
           <span className={styles.metaTotal}>
             {t('quota_management.meta_credentials', { count: totalCount })}

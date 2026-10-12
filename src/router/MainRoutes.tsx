@@ -1,4 +1,5 @@
 import { Navigate, useRoutes, type Location } from 'react-router-dom';
+import { ProxyOverviewPage } from '@/features/dashboard/ProxyOverviewPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { ProvidersWorkbenchPage } from '@/features/providers/ProvidersWorkbenchPage';
 import { AuthFilesPage } from '@/features/authFiles/AuthFilesPage';
@@ -17,6 +18,7 @@ import { useAuthStore } from '@/stores';
 const createMainRoutes = (supportsPlugin: boolean) => [
   { path: '/', element: <DashboardPage /> },
   { path: '/dashboard', element: <DashboardPage /> },
+  { path: '/dashboard/proxy', element: <ProxyOverviewPage /> },
   { path: '/settings', element: <Navigate to="/config" replace /> },
   { path: '/api-keys', element: <Navigate to="/config" replace /> },
   { path: '/quick-start', element: <ProvidersWorkbenchPage fixedBrand="apikeyFun" /> },
