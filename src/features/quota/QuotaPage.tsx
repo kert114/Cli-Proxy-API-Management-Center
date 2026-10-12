@@ -63,7 +63,13 @@ const SKELETON_CARD_COUNT = 6;
  */
 const displayNameFor = (name: string) => name;
 
-export function QuotaPage() {
+export function QuotaPage({
+  embedded = false,
+  onRefreshExtra,
+}: {
+  embedded?: boolean;
+  onRefreshExtra?: () => void;
+} = {}) {
   const { t } = useTranslation();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const resolvedTheme: ResolvedTheme = useThemeStore((state) => state.resolvedTheme);
@@ -115,11 +121,6 @@ export function QuotaPage() {
       if (isCurrent()) setLoading(false);
     }
   }, [connectionStatus, sessionGeneration, t]);
-
-  const refreshPage = useCallback(async () => {
-    await Promise.all([loadFiles(), refreshCursorUsage()]);
-  }, [loadFiles, refreshCursorUsage]);
-  useHeaderRefresh(refreshPage);
 
   useEffect(() => {
     void loadFiles();
@@ -273,6 +274,12 @@ export function QuotaPage() {
     void loadFiles();
   }, [disableControls, loadFiles, sessionGeneration, refreshCursorUsage]);
 
+  const refreshPage = useCallback(() => {
+    handleRefreshAll();
+    onRefreshExtra?.();
+  }, [handleRefreshAll, onRefreshExtra]);
+  useHeaderRefresh(refreshPage);
+
   useEffect(() => {
     const wasLoading = prevLoadingRef.current;
     prevLoadingRef.current = loading;
@@ -341,6 +348,7 @@ export function QuotaPage() {
   return (
     <div className={styles.page} ref={revealRef}>
       <QuotaHeader
+        embedded={embedded}
         totalCount={workbenchEntries.length}
         loadedCount={loadedCount}
         attentionCount={attentionCount}
