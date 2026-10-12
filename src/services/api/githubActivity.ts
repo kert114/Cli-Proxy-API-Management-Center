@@ -45,7 +45,10 @@ export interface GitHubRepository {
   commitCount: number;
 }
 export interface GitHubActivity {
-  scope: { kind: 'account'; login: string } | { kind: 'repository'; name: string };
+  scope:
+    | { kind: 'account'; login: string }
+    | { kind: 'organization'; name: string; account: string }
+    | { kind: 'repository'; name: string };
   repositoryCount: number;
   issueCount: number;
   reviewCount: number;
@@ -112,15 +115,33 @@ function boolean(value: unknown): boolean {
   if (typeof value !== 'boolean') throw new Error('Invalid GitHub activity response');
   return value;
 }
-export function parseGitHubActivity(payload: unknown): GitHubActivity {
+export function parseGitHubActivity(
+  payload: unknown,
+  expected?: { account: string; organization: string }
+): GitHubActivity {
   const data = record(payload);
   const account = data.account === undefined ? '' : text(data.account);
   if (account && !/^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/.test(account)) {
     throw new Error('Invalid GitHub account');
   }
-  const repository = account ? '' : repositoryName(data.repository);
+  const organization = data.organization === undefined ? '' : text(data.organization);
+  if (organization && (!account || !/^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/.test(organization)))
+    throw new Error('Invalid GitHub organization');
+  if (
+    expected &&
+    (account.toLowerCase() !== expected.account.toLowerCase() ||
+      organization.toLowerCase() !== expected.organization.toLowerCase())
+  )
+    throw new Error('Unexpected GitHub activity scope');
+  const scopedRepository = (value: unknown) => {
+    const name = repositoryName(value);
+    if (organization && name.split('/')[0].toLowerCase() !== organization.toLowerCase())
+      throw new Error('Repository outside GitHub organization');
+    return name;
+  };
+  const repository = account ? '' : scopedRepository(data.repository);
   const rowRepository = (row: Record<string, unknown>) =>
-    account ? repositoryName(row.repository) : repository;
+    account ? scopedRepository(row.repository) : repository;
   const parsePR = (value: unknown): GitHubPullRequest => {
     const pr = record(value);
     const repo = rowRepository(pr);
@@ -139,7 +160,11 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
     };
   };
   return {
-    scope: account ? { kind: 'account', login: account } : { kind: 'repository', name: repository },
+    scope: organization
+      ? { kind: 'organization', name: organization, account }
+      : account
+        ? { kind: 'account', login: account }
+        : { kind: 'repository', name: repository },
     repositoryCount: account ? count(data.repository_count) : 1,
     issueCount: account ? count(data.issue_count) : 0,
     reviewCount: account ? count(data.review_count) : 0,
@@ -147,7 +172,7 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
     repositories: account
       ? list(data.repositories, (value) => {
           const repo = record(value);
-          const name = repositoryName(repo.name);
+          const name = scopedRepository(repo.name);
           return {
             name,
             url: githubUrl(repo.url, name),
@@ -160,7 +185,7 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
     issues: account
       ? list(data.issues, (value) => {
           const issue = record(value);
-          const repo = repositoryName(issue.repository);
+          const repo = scopedRepository(issue.repository);
           return {
             repository: repo,
             number: count(issue.number),
@@ -174,7 +199,7 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
     reviews: account
       ? list(data.reviews, (value) => {
           const review = record(value);
-          const repo = repositoryName(review.repository);
+          const repo = scopedRepository(review.repository);
           return {
             repository: repo,
             title: text(review.title),
@@ -184,7 +209,7 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
         })
       : [],
     repository,
-    url: githubUrl(data.url, account || repository),
+    url: githubUrl(data.url, organization || account || repository),
     defaultBranch: text(data.default_branch),
     checkedAt: text(data.checked_at),
     openCount: count(data.open_count),
@@ -209,17 +234,19 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
 }
 
 export const githubActivityApi = {
-  async getAccount(
+  async getOrganization(
     account: string,
+    organization: string,
     window: { since: string; until: string },
     signal?: AbortSignal
   ) {
     return parseGitHubActivity(
       await apiClient.get<unknown>('/observability/github', {
-        params: { account, ...window },
+        params: { account, organization, ...window },
         signal,
         timeout: 0,
-      })
+      }),
+      { account, organization }
     );
   },
 };

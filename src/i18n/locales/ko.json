@@ -2318,13 +2318,13 @@
     "activity_month": "이번 달",
     "activity_year": "올해",
     "current_quotas": "현재 할당량",
-    "account_scope": "포크와 공유 저장소를 포함한 접근 가능한 {{count}}개 저장소의 내 활동입니다. PR에는 내 참여, 검토 요청 및 소유 저장소가 포함됩니다. 커밋 수는 저장소별 기본 브랜치의 내 커밋 합계입니다. 매분 새로 고칩니다.",
     "search_limit": "GitHub는 각 PR 검색을 1,000개 결과로 제한합니다. 열린 PR 수는 최소값입니다.",
     "issues": "생성한 이슈",
     "reviews": "검토한 PR",
     "repositories": "저장소",
     "repository_commits": "이 기간 커밋 수: {{count}}",
     "fork": "포크",
-    "no_activity": "이 기간에 활동이 없습니다."
+    "no_activity": "이 기간에 활동이 없습니다.",
+    "organization_scope": "{{organization}} 저장소에서의 내 작업입니다. 접근 가능한 저장소: {{count}}개. 열린 PR은 전체 조직을 포함하며 기간별 PR, 이슈, 검토 활동은 내 작업입니다. 커밋 수는 조직 내 기본 브랜치의 내 커밋 합계입니다. 매분 새로 고칩니다."
   }
 }

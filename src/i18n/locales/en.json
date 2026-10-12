@@ -2318,13 +2318,13 @@
     "activity_month": "This month",
     "activity_year": "This year",
     "current_quotas": "Current quotas",
-    "account_scope": "Your activity across {{count}} accessible repositories, including forks and shared repositories. PRs include your involvement, review requests and owned repositories. Commit totals sum your default-branch commits across repositories. Refreshes every minute.",
     "search_limit": "GitHub limits each PR search to 1,000 results. The open count is a lower bound.",
     "issues": "Issues opened",
     "reviews": "PRs reviewed",
     "repositories": "Repositories",
     "repository_commits": "Commits in this period: {{count}}",
     "fork": "Fork",
-    "no_activity": "No activity in this period."
+    "no_activity": "No activity in this period.",
+    "organization_scope": "Your work in {{organization}} repositories. Accessible repositories: {{count}}. Open PRs cover the whole organization; PR, issue and review activity is yours. Commit totals sum your default-branch commits in this organization. Refreshes every minute."
   }
 }

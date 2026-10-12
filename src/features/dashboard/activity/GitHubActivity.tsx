@@ -14,6 +14,7 @@ import { activityWindow, type ActivityPeriod } from './window';
 import styles from './GitHubActivity.module.scss';
 
 const ACCOUNT = 'kert114';
+const ORGANIZATION = '60xAI';
 
 type LoadState =
   | { key: string; status: 'loading' }
@@ -51,21 +52,26 @@ export function GitHubActivityPanel({
   const openList = useRef<HTMLDivElement>(null);
   const activityList = useRef<HTMLDivElement>(null);
   const account = data.scope.kind === 'account' ? data.scope.login : ACCOUNT;
+  const qualifier = data.scope.kind === 'organization' ? ` org:${data.scope.name}` : '';
   const range = `${window.since}..${new Date(Date.parse(window.until) - 1000).toISOString()}`;
   const searchURL = (query: string, type = 'issues') =>
     `https://github.com/search?${new URLSearchParams({ q: query, type })}`;
 
   const metrics = [
-    { label: t('work_dashboard.open_prs'), count: data.openCount, url: '' },
+    {
+      label: t('work_dashboard.open_prs'),
+      count: data.openCount,
+      url: searchURL(`is:pr is:open org:${ORGANIZATION}`),
+    },
     {
       label: t(`work_dashboard.created_${period}`),
       count: data.createdCount,
-      url: searchURL(`is:pr author:${account} created:${range}`),
+      url: searchURL(`is:pr author:${account}${qualifier} created:${range}`),
     },
     {
       label: t(`work_dashboard.merged_${period}`),
       count: data.mergedCount,
-      url: searchURL(`is:pr author:${account} merged:${range}`),
+      url: searchURL(`is:pr author:${account}${qualifier} merged:${range}`),
     },
     {
       label: t(`work_dashboard.commits_${period}`),
@@ -75,7 +81,7 @@ export function GitHubActivityPanel({
     {
       label: t('work_dashboard.issues'),
       count: data.issueCount,
-      url: searchURL(`is:issue author:${account} created:${range}`),
+      url: searchURL(`is:issue author:${account}${qualifier} created:${range}`),
     },
     {
       label: t('work_dashboard.reviews'),
@@ -173,7 +179,7 @@ export function GitHubActivityPanel({
     <>
       <div className={styles.metrics}>
         {metrics.map((metric, index) =>
-          index === 0 || index === 3 || index === 5 ? (
+          (index === 0 && data.scope.kind !== 'organization') || index === 3 || index === 5 ? (
             <button
               key={metric.label}
               className={styles.metric}
@@ -202,13 +208,20 @@ export function GitHubActivityPanel({
               rel="noopener noreferrer"
             >
               <span>{metric.label}</span>
-              <strong>{metric.count.toLocaleString()}</strong>
+              <strong>
+                {metric.count.toLocaleString()}
+                {index === 0 && data.openTruncated && '+'}
+              </strong>
             </a>
           )
         )}
       </div>
       <p className={styles.note}>
-        {t('work_dashboard.account_scope', { account, count: data.repositoryCount })}
+        {t('work_dashboard.organization_scope', {
+          account,
+          organization: ORGANIZATION,
+          count: data.repositoryCount,
+        })}
       </p>
       {data.openTruncated && <p className={styles.note}>{t('work_dashboard.search_limit')}</p>}
       <div className={styles.columns}>
@@ -335,7 +348,7 @@ export function GitHubActivity({
   const now = useNow();
   const window = useMemo(() => activityWindow(period, new Date(now)), [period, now]);
   const { since, until } = window;
-  const key = JSON.stringify([apiBase, session, ACCOUNT, period, window.since]);
+  const key = JSON.stringify([apiBase, session, ACCOUNT, ORGANIZATION, period, window.since]);
 
   useEffect(() => {
     if (!connected) return;
@@ -345,7 +358,7 @@ export function GitHubActivity({
       setRefreshing(true);
       setState((previous) => (previous?.key === key ? previous : { key, status: 'loading' }));
       void githubActivityApi
-        .getAccount(ACCOUNT, { since, until }, controller.signal)
+        .getOrganization(ACCOUNT, ORGANIZATION, { since, until }, controller.signal)
         .then(
           (data) => {
             if (!controller.signal.aborted) {
@@ -387,8 +400,12 @@ export function GitHubActivity({
           <IconGithub size={24} />
           <div>
             <h2>{t('work_dashboard.github')}</h2>
-            <a href={`https://github.com/${ACCOUNT}`} target="_blank" rel="noopener noreferrer">
-              {ACCOUNT}
+            <a
+              href={`https://github.com/${ORGANIZATION}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {ORGANIZATION}
             </a>
           </div>
         </div>
