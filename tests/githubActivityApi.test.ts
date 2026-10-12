@@ -55,3 +55,52 @@ test('rejects links outside the requested GitHub repository', () => {
   }
   expect(() => parseGitHubActivity({ ...payload, commit_count: -1 })).toThrow();
 });
+
+const accountPayload = {
+  ...payload,
+  account: 'kert114',
+  repository: '',
+  url: 'https://github.com/kert114',
+  repository_count: 2,
+  issue_count: 1,
+  review_count: 2,
+  open_truncated: false,
+  repositories: [
+    {
+      name: 'team/app',
+      url: 'https://github.com/team/app',
+      default_branch: 'main',
+      fork: false,
+      commit_count: 2,
+    },
+  ],
+  issues: [
+    {
+      repository: 'team/app',
+      number: 4,
+      title: 'Track work',
+      url: 'https://github.com/team/app/issues/4',
+      state: 'OPEN',
+      created_at: payload.checked_at,
+    },
+  ],
+  reviews: [],
+  open_prs: [
+    { ...payload.open_prs[0], repository: 'team/app', url: 'https://github.com/team/app/pull/7' },
+  ],
+  commits: [
+    {
+      ...payload.commits[0],
+      repository: 'kert114/fork',
+      url: 'https://github.com/kert114/fork/commit/abc123',
+    },
+  ],
+};
+
+test('account activity accepts multiple repositories and keeps their identities', () => {
+  const snapshot = parseGitHubActivity(accountPayload);
+  expect(snapshot.scope.kind).toBe('account');
+  expect(snapshot.openPRs[0].repository).toBe('team/app');
+  expect(snapshot.commits[0].repository).toBe('kert114/fork');
+  expect(snapshot.repositoryCount).toBe(2);
+});

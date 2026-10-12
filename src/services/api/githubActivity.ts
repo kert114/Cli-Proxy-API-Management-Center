@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 
 export interface GitHubPullRequest {
+  repository: string;
   number: number;
   title: string;
   url: string;
@@ -14,6 +15,7 @@ export interface GitHubPullRequest {
 }
 
 export interface GitHubCommit {
+  repository: string;
   sha: string;
   title: string;
   url: string;
@@ -21,7 +23,36 @@ export interface GitHubCommit {
   author: string;
 }
 
+export interface GitHubIssue {
+  repository: string;
+  number: number;
+  title: string;
+  url: string;
+  state: string;
+  createdAt: string;
+}
+export interface GitHubReview {
+  repository: string;
+  title: string;
+  url: string;
+  date: string;
+}
+export interface GitHubRepository {
+  name: string;
+  url: string;
+  defaultBranch: string;
+  fork: boolean;
+  commitCount: number;
+}
 export interface GitHubActivity {
+  scope: { kind: 'account'; login: string } | { kind: 'repository'; name: string };
+  repositoryCount: number;
+  issueCount: number;
+  reviewCount: number;
+  openTruncated: boolean;
+  repositories: GitHubRepository[];
+  issues: GitHubIssue[];
+  reviews: GitHubReview[];
   repository: string;
   url: string;
   defaultBranch: string;
@@ -71,21 +102,35 @@ function list<T>(value: unknown, parse: (value: unknown) => T): T[] {
   return value.map(parse);
 }
 
+const repositoryPattern = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}\/[A-Za-z0-9_.-]{1,100}$/;
+function repositoryName(value: unknown): string {
+  const name = text(value);
+  if (!repositoryPattern.test(name)) throw new Error('Invalid GitHub repository');
+  return name;
+}
+function boolean(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new Error('Invalid GitHub activity response');
+  return value;
+}
 export function parseGitHubActivity(payload: unknown): GitHubActivity {
   const data = record(payload);
-  const repository = text(data.repository);
-  if (!/^[A-Za-z0-9][A-Za-z0-9-]{0,38}\/[A-Za-z0-9_.-]{1,100}$/.test(repository)) {
-    throw new Error('Invalid GitHub repository');
+  const account = data.account === undefined ? '' : text(data.account);
+  if (account && !/^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/.test(account)) {
+    throw new Error('Invalid GitHub account');
   }
+  const repository = account ? '' : repositoryName(data.repository);
+  const rowRepository = (row: Record<string, unknown>) =>
+    account ? repositoryName(row.repository) : repository;
   const parsePR = (value: unknown): GitHubPullRequest => {
     const pr = record(value);
-    if (typeof pr.draft !== 'boolean') throw new Error('Invalid GitHub activity response');
+    const repo = rowRepository(pr);
     return {
+      repository: repo,
       number: count(pr.number),
       title: text(pr.title),
-      url: githubUrl(pr.url, repository),
+      url: githubUrl(pr.url, repo),
       author: text(pr.author),
-      draft: pr.draft,
+      draft: boolean(pr.draft),
       review: text(pr.review),
       checks: text(pr.checks),
       mergeable: text(pr.mergeable),
@@ -94,8 +139,52 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
     };
   };
   return {
+    scope: account ? { kind: 'account', login: account } : { kind: 'repository', name: repository },
+    repositoryCount: account ? count(data.repository_count) : 1,
+    issueCount: account ? count(data.issue_count) : 0,
+    reviewCount: account ? count(data.review_count) : 0,
+    openTruncated: account ? boolean(data.open_truncated) : false,
+    repositories: account
+      ? list(data.repositories, (value) => {
+          const repo = record(value);
+          const name = repositoryName(repo.name);
+          return {
+            name,
+            url: githubUrl(repo.url, name),
+            defaultBranch: text(repo.default_branch),
+            fork: boolean(repo.fork),
+            commitCount: count(repo.commit_count),
+          };
+        })
+      : [],
+    issues: account
+      ? list(data.issues, (value) => {
+          const issue = record(value);
+          const repo = repositoryName(issue.repository);
+          return {
+            repository: repo,
+            number: count(issue.number),
+            title: text(issue.title),
+            url: githubUrl(issue.url, repo),
+            state: text(issue.state),
+            createdAt: text(issue.created_at),
+          };
+        })
+      : [],
+    reviews: account
+      ? list(data.reviews, (value) => {
+          const review = record(value);
+          const repo = repositoryName(review.repository);
+          return {
+            repository: repo,
+            title: text(review.title),
+            url: githubUrl(review.url, repo),
+            date: text(review.date),
+          };
+        })
+      : [],
     repository,
-    url: githubUrl(data.url, repository),
+    url: githubUrl(data.url, account || repository),
     defaultBranch: text(data.default_branch),
     checkedAt: text(data.checked_at),
     openCount: count(data.open_count),
@@ -106,10 +195,12 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
     createdPRs: list(data.created_prs, parsePR),
     commits: list(data.commits, (value) => {
       const commit = record(value);
+      const repo = rowRepository(commit);
       return {
+        repository: repo,
         sha: text(commit.sha),
         title: text(commit.title),
-        url: githubUrl(commit.url, repository),
+        url: githubUrl(commit.url, repo),
         date: text(commit.date),
         author: text(commit.author),
       };
@@ -118,11 +209,16 @@ export function parseGitHubActivity(payload: unknown): GitHubActivity {
 }
 
 export const githubActivityApi = {
-  async get(repository: string, window: { since: string; until: string }, signal?: AbortSignal) {
+  async getAccount(
+    account: string,
+    window: { since: string; until: string },
+    signal?: AbortSignal
+  ) {
     return parseGitHubActivity(
       await apiClient.get<unknown>('/observability/github', {
-        params: { repository, ...window },
+        params: { account, ...window },
         signal,
+        timeout: 0,
       })
     );
   },
