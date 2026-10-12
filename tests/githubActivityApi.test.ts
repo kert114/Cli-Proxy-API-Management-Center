@@ -104,3 +104,24 @@ test('account activity accepts multiple repositories and keeps their identities'
   expect(snapshot.commits[0].repository).toBe('kert114/fork');
   expect(snapshot.repositoryCount).toBe(2);
 });
+
+test('organization response rejects repositories outside the selected organization', () => {
+  const scoped = {
+    ...accountPayload,
+    organization: '60xAI',
+    url: 'https://github.com/60xAI',
+    repositories: [],
+    open_prs: [],
+    commits: [],
+    issues: [],
+    reviews: [],
+  };
+  expect(parseGitHubActivity(scoped).scope.kind).toBe('organization');
+  expect(() => parseGitHubActivity({ ...scoped, open_prs: accountPayload.open_prs })).toThrow();
+});
+
+test('rejects an account-wide reply for an organization-specific request', () => {
+  expect(() =>
+    parseGitHubActivity(accountPayload, { account: 'kert114', organization: '60xAI' })
+  ).toThrow();
+});

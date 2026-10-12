@@ -2316,13 +2316,13 @@
     "activity_month": "本月",
     "activity_year": "今年",
     "current_quotas": "当前额度",
-    "account_scope": "你在 {{count}} 个可访问仓库中的活动，包括分支仓库和共享仓库。PR 包括你参与的、请求你审查的以及你拥有的仓库中的 PR。提交数为各仓库默认分支上你的提交总和。每分钟刷新。",
     "search_limit": "GitHub 每次 PR 搜索最多返回 1,000 个结果。未合并数量为下限。",
     "issues": "创建的议题",
     "reviews": "审查的 PR",
     "repositories": "仓库",
     "repository_commits": "此时间段提交数：{{count}}",
     "fork": "分支仓库",
-    "no_activity": "此时间段内暂无活动。"
+    "no_activity": "此时间段内暂无活动。",
+    "organization_scope": "你在 {{organization}} 仓库中的工作。可访问仓库数：{{count}}。未合并 PR 覆盖整个组织；PR、议题和审查活动仅包含你自己的工作。提交数为该组织各默认分支上你的提交总和。每分钟刷新。"
   }
 }

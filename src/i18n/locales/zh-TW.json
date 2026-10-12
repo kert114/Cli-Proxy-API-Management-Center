@@ -2342,13 +2342,13 @@
     "activity_month": "本月",
     "activity_year": "今年",
     "current_quotas": "目前額度",
-    "account_scope": "你在 {{count}} 個可存取儲存庫中的活動，包括分支儲存庫和共用儲存庫。PR 包括你參與的、請求你審查的以及你擁有的儲存庫中的 PR。提交數為各儲存庫預設分支上你的提交總和。每分鐘重新整理。",
     "search_limit": "GitHub 每次 PR 搜尋最多傳回 1,000 個結果。開啟數量為下限。",
     "issues": "建立的議題",
     "reviews": "審查的 PR",
     "repositories": "儲存庫",
     "repository_commits": "此期間提交數：{{count}}",
     "fork": "分支儲存庫",
-    "no_activity": "此期間沒有活動。"
+    "no_activity": "此期間沒有活動。",
+    "organization_scope": "你在 {{organization}} 儲存庫中的工作。可存取儲存庫數：{{count}}。開啟的 PR 涵蓋整個組織；PR、議題和審查活動僅包含你自己的工作。提交數為此組織各預設分支上你的提交總和。每分鐘重新整理。"
   }
 }
