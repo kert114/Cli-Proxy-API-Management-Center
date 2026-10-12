@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
 import { IconGithub, IconRefreshCw } from '@/components/ui/icons';
 import { useAuthStore, useQuotaStore } from '@/stores';
 import { useNow } from '@/hooks/useNow';
-import { githubActivityApi, type GitHubActivity as Activity } from '@/services/api/githubActivity';
+import {
+  githubActivityApi,
+  type GitHubActivity as Activity,
+  type GitHubPullRequest,
+} from '@/services/api/githubActivity';
 import { activityWindow, type ActivityPeriod } from './window';
 import styles from './GitHubActivity.module.scss';
 
-const DEFAULT_REPOSITORY = 'kert114/CLIProxyAPI';
-const repositoryPattern = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}\/[A-Za-z0-9_.-]{1,100}$/;
+const ACCOUNT = 'kert114';
 
 type LoadState =
   | { key: string; status: 'loading' }
@@ -45,26 +47,40 @@ export function GitHubActivityPanel({
   window: { since: string; until: string };
 }) {
   const { t, i18n } = useTranslation();
-  const [activityTab, setActivityTab] = useState<'prs' | 'commits'>('prs');
+  const [activityTab, setActivityTab] = useState<'prs' | 'commits' | 'issues' | 'reviews'>('prs');
+  const openList = useRef<HTMLDivElement>(null);
+  const activityList = useRef<HTMLDivElement>(null);
+  const account = data.scope.kind === 'account' ? data.scope.login : ACCOUNT;
   const range = `${window.since}..${new Date(Date.parse(window.until) - 1000).toISOString()}`;
-  const searchURL = (filter: string) =>
-    `${data.url}/pulls?q=${encodeURIComponent(`is:pr ${filter}:${range}`)}`;
+  const searchURL = (query: string, type = 'issues') =>
+    `https://github.com/search?${new URLSearchParams({ q: query, type })}`;
+
   const metrics = [
-    { label: t('work_dashboard.open_prs'), count: data.openCount, url: `${data.url}/pulls` },
+    { label: t('work_dashboard.open_prs'), count: data.openCount, url: '' },
     {
       label: t(`work_dashboard.created_${period}`),
       count: data.createdCount,
-      url: searchURL('created'),
+      url: searchURL(`is:pr author:${account} created:${range}`),
     },
     {
       label: t(`work_dashboard.merged_${period}`),
       count: data.mergedCount,
-      url: searchURL('merged'),
+      url: searchURL(`is:pr author:${account} merged:${range}`),
     },
     {
       label: t(`work_dashboard.commits_${period}`),
       count: data.commitCount,
-      url: `${data.url}/commits/${encodeURIComponent(data.defaultBranch)}?${new URLSearchParams({ since: window.since, until: new Date(Date.parse(window.until) - 1000).toISOString() })}`,
+      url: '',
+    },
+    {
+      label: t('work_dashboard.issues'),
+      count: data.issueCount,
+      url: searchURL(`is:issue author:${account} created:${range}`),
+    },
+    {
+      label: t('work_dashboard.reviews'),
+      count: data.reviewCount,
+      url: '',
     },
   ];
   const date = (value: string) =>
@@ -78,79 +94,141 @@ export function GitHubActivityPanel({
     visible < total && (
       <p className={styles.note}>{t('work_dashboard.showing', { visible, total })}</p>
     );
-
+  const renderPR = (pr: GitHubPullRequest, status: boolean) => (
+    <li key={pr.url}>
+      <a className={styles.row} href={pr.url} target="_blank" rel="noopener noreferrer">
+        <div className={styles.rowTitle}>
+          <span className={styles.number}>#{pr.number}</span>
+          <strong>{pr.title}</strong>
+        </div>
+        <span className={styles.meta}>
+          {pr.repository} · {pr.author || t('work_dashboard.unknown_author')}
+          {pr.draft && ` · ${t('work_dashboard.draft')}`}
+          {!status &&
+            ` · ${t(`work_dashboard.state_${pr.state.toLowerCase()}`, { defaultValue: pr.state })} · ${date(pr.createdAt)}`}
+        </span>
+        {status && (
+          <div className={styles.badges}>
+            <span
+              className={
+                pr.checks === 'SUCCESS'
+                  ? styles.good
+                  : pr.checks === 'FAILURE' || pr.checks === 'ERROR'
+                    ? styles.bad
+                    : styles.neutral
+              }
+            >
+              {t(`work_dashboard.${checkLabel(pr.checks)}`)}
+            </span>
+            <span
+              className={
+                pr.review === 'APPROVED'
+                  ? styles.good
+                  : pr.review === 'CHANGES_REQUESTED'
+                    ? styles.bad
+                    : styles.neutral
+              }
+            >
+              {t(`work_dashboard.${reviewLabel(pr.review)}`)}
+            </span>
+            {pr.mergeable === 'CONFLICTING' && (
+              <span className={styles.bad}>{t('work_dashboard.conflicts')}</span>
+            )}
+          </div>
+        )}
+      </a>
+    </li>
+  );
+  const activities =
+    activityTab === 'commits'
+      ? data.commits.map((commit) => ({
+          url: commit.url,
+          title: commit.title,
+          prefix: commit.sha.slice(0, 7),
+          repository: commit.repository,
+          date: commit.date,
+        }))
+      : activityTab === 'issues'
+        ? data.issues.map((issue) => ({
+            url: issue.url,
+            title: issue.title,
+            prefix: `#${issue.number}`,
+            repository: issue.repository,
+            date: issue.createdAt,
+          }))
+        : data.reviews.map((review) => ({
+            url: review.url,
+            title: review.title,
+            prefix: '',
+            repository: review.repository,
+            date: review.date,
+          }));
+  const activityCount =
+    activityTab === 'commits'
+      ? data.commitCount
+      : activityTab === 'issues'
+        ? data.issueCount
+        : data.reviewCount;
   return (
     <>
       <div className={styles.metrics}>
-        {metrics.map((metric) => (
-          <a
-            key={metric.label}
-            className={styles.metric}
-            href={metric.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span>{metric.label}</span>
-            <strong>{metric.count.toLocaleString()}</strong>
-          </a>
-        ))}
+        {metrics.map((metric, index) =>
+          index === 0 || index === 3 || index === 5 ? (
+            <button
+              key={metric.label}
+              className={styles.metric}
+              type="button"
+              onClick={() => {
+                if (index === 0) {
+                  openList.current?.scrollIntoView({ block: 'center' });
+                  return;
+                }
+                setActivityTab(index === 3 ? 'commits' : 'reviews');
+                activityList.current?.scrollIntoView({ block: 'center' });
+              }}
+            >
+              <span>{metric.label}</span>
+              <strong>
+                {metric.count.toLocaleString()}
+                {index === 0 && data.openTruncated && '+'}
+              </strong>
+            </button>
+          ) : (
+            <a
+              key={metric.label}
+              className={styles.metric}
+              href={metric.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span>{metric.label}</span>
+              <strong>{metric.count.toLocaleString()}</strong>
+            </a>
+          )
+        )}
       </div>
       <p className={styles.note}>
-        {t('work_dashboard.scope', { branch: data.defaultBranch || t('work_dashboard.no_branch') })}
+        {t('work_dashboard.account_scope', { account, count: data.repositoryCount })}
       </p>
+      {data.openTruncated && <p className={styles.note}>{t('work_dashboard.search_limit')}</p>}
       <div className={styles.columns}>
         <Card
           title={t('work_dashboard.open_prs')}
-          extra={<span className={styles.count}>{data.openCount}</span>}
+          extra={
+            <span className={styles.count}>
+              {data.openCount}
+              {data.openTruncated && '+'}
+            </span>
+          }
         >
-          {data.openPRs.length === 0 ? (
-            <p className={styles.empty}>{t('work_dashboard.no_open_prs')}</p>
-          ) : (
-            <ul className={styles.list}>
-              {data.openPRs.map((pr) => (
-                <li key={pr.number}>
-                  <a className={styles.row} href={pr.url} target="_blank" rel="noopener noreferrer">
-                    <div className={styles.rowTitle}>
-                      <span className={styles.number}>#{pr.number}</span>
-                      <strong>{pr.title}</strong>
-                    </div>
-                    <span className={styles.meta}>
-                      {pr.author || t('work_dashboard.unknown_author')}
-                      {pr.draft && ` · ${t('work_dashboard.draft')}`}
-                    </span>
-                    <div className={styles.badges}>
-                      <span
-                        className={
-                          pr.checks === 'SUCCESS'
-                            ? styles.good
-                            : pr.checks === 'FAILURE' || pr.checks === 'ERROR'
-                              ? styles.bad
-                              : styles.neutral
-                        }
-                      >
-                        {t(`work_dashboard.${checkLabel(pr.checks)}`)}
-                      </span>
-                      <span
-                        className={
-                          pr.review === 'APPROVED'
-                            ? styles.good
-                            : pr.review === 'CHANGES_REQUESTED'
-                              ? styles.bad
-                              : styles.neutral
-                        }
-                      >
-                        {t(`work_dashboard.${reviewLabel(pr.review)}`)}
-                      </span>
-                      {pr.mergeable === 'CONFLICTING' && (
-                        <span className={styles.bad}>{t('work_dashboard.conflicts')}</span>
-                      )}
-                    </div>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-          {shown(data.openPRs.length, data.openCount)}
+          <div ref={openList}>
+            {data.openPRs.length ? (
+              <ul className={styles.list}>{data.openPRs.map((pr) => renderPR(pr, true))}</ul>
+            ) : (
+              <p className={styles.empty}>{t('work_dashboard.no_open_prs')}</p>
+            )}
+            {shown(data.openPRs.length, data.openCount)}
+          </div>
         </Card>
         <Card
           title={t(`work_dashboard.activity_${period}`)}
@@ -160,87 +238,82 @@ export function GitHubActivityPanel({
               role="group"
               aria-label={t('work_dashboard.activity_type')}
             >
-              <Button
-                variant={activityTab === 'prs' ? 'secondary' : 'ghost'}
-                size="sm"
-                aria-pressed={activityTab === 'prs'}
-                onClick={() => setActivityTab('prs')}
-              >
-                {t('work_dashboard.prs')}
-              </Button>
-              <Button
-                variant={activityTab === 'commits' ? 'secondary' : 'ghost'}
-                size="sm"
-                aria-pressed={activityTab === 'commits'}
-                onClick={() => setActivityTab('commits')}
-              >
-                {t('work_dashboard.commits')}
-              </Button>
+              {(['prs', 'commits', 'issues', 'reviews'] as const).map((tab) => (
+                <Button
+                  key={tab}
+                  variant={activityTab === tab ? 'secondary' : 'ghost'}
+                  size="sm"
+                  aria-pressed={activityTab === tab}
+                  onClick={() => setActivityTab(tab)}
+                >
+                  {t(`work_dashboard.${tab}`)}
+                </Button>
+              ))}
             </div>
           }
         >
-          {activityTab === 'prs' ? (
-            <>
-              {data.createdPRs.length === 0 ? (
-                <p className={styles.empty}>{t('work_dashboard.no_created_prs')}</p>
-              ) : (
-                <ul className={styles.list}>
-                  {data.createdPRs.map((pr) => (
-                    <li key={pr.number}>
-                      <a
-                        className={styles.row}
-                        href={pr.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <div className={styles.rowTitle}>
-                          <span className={styles.number}>#{pr.number}</span>
-                          <strong>{pr.title}</strong>
-                        </div>
-                        <span className={styles.meta}>
-                          {t(`work_dashboard.state_${pr.state.toLowerCase()}`, {
-                            defaultValue: pr.state,
-                          })}{' '}
-                          · {date(pr.createdAt)}
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {shown(data.createdPRs.length, data.createdCount)}
-            </>
-          ) : (
-            <>
-              {data.commits.length === 0 ? (
-                <p className={styles.empty}>{t('work_dashboard.no_commits')}</p>
-              ) : (
-                <ul className={styles.list}>
-                  {data.commits.map((commit) => (
-                    <li key={commit.sha}>
-                      <a
-                        className={styles.row}
-                        href={commit.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <div className={styles.rowTitle}>
-                          <span className={styles.number}>{commit.sha.slice(0, 7)}</span>
-                          <strong>{commit.title}</strong>
-                        </div>
-                        <span className={styles.meta}>
-                          {commit.author} · {date(commit.date)}
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {shown(data.commits.length, data.commitCount)}
-            </>
-          )}
+          <div ref={activityList}>
+            {activityTab === 'prs' ? (
+              <>
+                {data.createdPRs.length ? (
+                  <ul className={styles.list}>
+                    {data.createdPRs.map((pr) => renderPR(pr, false))}
+                  </ul>
+                ) : (
+                  <p className={styles.empty}>{t('work_dashboard.no_created_prs')}</p>
+                )}
+                {shown(data.createdPRs.length, data.createdCount)}
+              </>
+            ) : (
+              <>
+                {activities.length ? (
+                  <ul className={styles.list}>
+                    {activities.map((item) => (
+                      <li key={item.url + item.date}>
+                        <a
+                          className={styles.row}
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <div className={styles.rowTitle}>
+                            <span className={styles.number}>{item.prefix}</span>
+                            <strong>{item.title}</strong>
+                          </div>
+                          <span className={styles.meta}>
+                            {item.repository} · {date(item.date)}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={styles.empty}>{t('work_dashboard.no_activity')}</p>
+                )}
+                {shown(activities.length, activityCount)}
+              </>
+            )}
+          </div>
         </Card>
       </div>
+      <Card
+        title={t('work_dashboard.repositories')}
+        extra={<span className={styles.count}>{data.repositoryCount}</span>}
+      >
+        <ul className={styles.repositoryList}>
+          {data.repositories.map((repo) => (
+            <li key={repo.name}>
+              <a className={styles.row} href={repo.url} target="_blank" rel="noopener noreferrer">
+                <strong>{repo.name}</strong>
+                <span className={styles.meta}>
+                  {t('work_dashboard.repository_commits', { count: repo.commitCount })}
+                  {repo.fork && ` · ${t('work_dashboard.fork')}`}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </>
   );
 }
@@ -256,50 +329,57 @@ export function GitHubActivity({
   const apiBase = useAuthStore((state) => state.apiBase);
   const connected = useAuthStore((state) => state.connectionStatus === 'connected');
   const session = useQuotaStore((state) => state.cacheGeneration);
-  const [repository, setRepository] = useState(DEFAULT_REPOSITORY);
-  const [draftRepository, setDraftRepository] = useState(DEFAULT_REPOSITORY);
-  const [editing, setEditing] = useState(false);
-  const [invalidRepository, setInvalidRepository] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [state, setState] = useState<LoadState | null>(null);
   const now = useNow();
   const window = useMemo(() => activityWindow(period, new Date(now)), [period, now]);
   const { since, until } = window;
-  const key = JSON.stringify([
-    apiBase,
-    session,
-    repository,
-    period,
-    window.since,
-    refresh,
-    refreshToken,
-  ]);
+  const key = JSON.stringify([apiBase, session, ACCOUNT, period, window.since]);
 
   useEffect(() => {
     if (!connected) return;
     const controller = new AbortController();
-    setState({ key, status: 'loading' });
-    void githubActivityApi.get(repository, { since, until }, controller.signal).then(
-      (data) => {
-        if (!controller.signal.aborted) setState({ key, status: 'success', data });
-      },
-      (error: unknown) => {
-        if (controller.signal.aborted) return;
-        const status =
-          error !== null && typeof error === 'object' && 'status' in error ? error.status : null;
-        setState({
-          key,
-          status: 'error',
-          reason: status === 403 ? 'local' : status === 404 ? 'backend' : 'unavailable',
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const load = () => {
+      setRefreshing(true);
+      setState((previous) => (previous?.key === key ? previous : { key, status: 'loading' }));
+      void githubActivityApi
+        .getAccount(ACCOUNT, { since, until }, controller.signal)
+        .then(
+          (data) => {
+            if (!controller.signal.aborted) {
+              setState({ key, status: 'success', data });
+              setRefreshing(false);
+            }
+          },
+          (error: unknown) => {
+            if (controller.signal.aborted) return;
+            const status =
+              error !== null && typeof error === 'object' && 'status' in error
+                ? error.status
+                : null;
+            setRefreshing(false);
+            setState({
+              key,
+              status: 'error',
+              reason: status === 403 ? 'local' : status === 404 ? 'backend' : 'unavailable',
+            });
+          }
+        )
+        .finally(() => {
+          if (!controller.signal.aborted) timer = setTimeout(load, 60_000);
         });
-      }
-    );
-    return () => controller.abort();
-    // Calendar boundaries are stable between minute ticks.
-  }, [connected, key, repository, since, until]);
+    };
+    load();
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [connected, key, since, until, refresh, refreshToken]);
 
   const current = connected && state?.key === key ? state : null;
-  const loading = connected && (!current || current.status === 'loading');
+  const loading = connected && (refreshing || !current || current.status === 'loading');
   return (
     <section className={styles.section} aria-label={t('work_dashboard.github')}>
       <header className={styles.header}>
@@ -307,21 +387,10 @@ export function GitHubActivity({
           <IconGithub size={24} />
           <div>
             <h2>{t('work_dashboard.github')}</h2>
-            <a href={`https://github.com/${repository}`} target="_blank" rel="noopener noreferrer">
-              {repository}
+            <a href={`https://github.com/${ACCOUNT}`} target="_blank" rel="noopener noreferrer">
+              {ACCOUNT}
             </a>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setEditing(!editing);
-              setDraftRepository(repository);
-              setInvalidRepository(false);
-            }}
-          >
-            {t('work_dashboard.change_repository')}
-          </Button>
         </div>
         <div className={styles.controls}>
           <Button
@@ -335,46 +404,7 @@ export function GitHubActivity({
           </Button>
         </div>
       </header>
-      {editing && (
-        <form
-          className={styles.repositoryForm}
-          onSubmit={(event) => {
-            event.preventDefault();
-            const next = draftRepository.trim();
-            if (!repositoryPattern.test(next)) {
-              setInvalidRepository(true);
-              return;
-            }
-            setRepository(next);
-            setEditing(false);
-            setInvalidRepository(false);
-          }}
-        >
-          <Input
-            label={t('work_dashboard.repository')}
-            value={draftRepository}
-            onChange={(event) => setDraftRepository(event.target.value)}
-            placeholder="owner/repository"
-            error={invalidRepository ? t('work_dashboard.invalid_repository') : undefined}
-          />
-          <Button type="submit" size="sm">
-            {t('work_dashboard.apply')}
-          </Button>
-        </form>
-      )}
-      <p className={styles.note}>
-        {new Date(window.since).toLocaleDateString(i18n.language, {
-          month: 'short',
-          day: 'numeric',
-        })}{' '}
-        –{' '}
-        {new Date(Date.parse(window.until) - 1).toLocaleDateString(i18n.language, {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })}
-      </p>
-      {loading && (
+      {loading && current?.status !== 'success' && (
         <p className={styles.empty} role="status">
           {t('work_dashboard.loading')}
         </p>
