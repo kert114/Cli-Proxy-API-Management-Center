@@ -1,9 +1,14 @@
-export type ActivityPeriod = 'day' | 'week';
+export type ActivityPeriod = 'day' | 'week' | 'month' | 'year';
+export const ACTIVITY_PERIODS: ActivityPeriod[] = ['day', 'week', 'month', 'year'];
 
 export function activityWindow(period: ActivityPeriod, now = new Date()) {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   if (period === 'week') start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  if (period === 'month' || period === 'year') start.setDate(1);
+  if (period === 'year') start.setMonth(0);
   const end = new Date(start);
-  end.setDate(end.getDate() + (period === 'week' ? 7 : 1));
+  if (period === 'year') end.setFullYear(end.getFullYear() + 1);
+  else if (period === 'month') end.setMonth(end.getMonth() + 1);
+  else end.setDate(end.getDate() + (period === 'week' ? 7 : 1));
   return { since: start.toISOString(), until: end.toISOString() };
 }

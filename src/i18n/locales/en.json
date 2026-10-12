@@ -2313,6 +2313,17 @@
     "error_local": "GitHub activity is available only through a direct localhost connection.",
     "error_backend": "This proxy does not support GitHub activity yet. Update your local proxy and reconnect.",
     "error_unavailable": "Could not load GitHub activity. Check gh auth status and repository access on this computer, then refresh.",
-    "checked": "Checked {{at}}"
+    "checked": "Checked {{at}}",
+    "month": "Month",
+    "year": "Year",
+    "created_month": "PRs opened this month",
+    "created_year": "PRs opened this year",
+    "merged_month": "PRs merged this month",
+    "merged_year": "PRs merged this year",
+    "commits_month": "Commits this month",
+    "commits_year": "Commits this year",
+    "activity_month": "This month",
+    "activity_year": "This year",
+    "current_quotas": "Current quotas"
   }
 }

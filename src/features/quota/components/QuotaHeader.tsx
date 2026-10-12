@@ -39,7 +39,7 @@ export function QuotaHeader(props: QuotaHeaderProps) {
     <header className={styles.header}>
       <div className={styles.copy}>
         <Heading className={styles.title} data-reveal>
-          {t('quota_management.title')}
+          {t(embedded ? 'work_dashboard.current_quotas' : 'quota_management.title')}
         </Heading>
         <p className={styles.meta} data-reveal>
           <span className={styles.metaTotal}>

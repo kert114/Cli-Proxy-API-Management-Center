@@ -17,3 +17,15 @@ test('day view includes Sunday without rolling it into the next week', () => {
   expect(new Date(day.until)).toEqual(new Date(2026, 9, 19));
   expect(new Date(activityWindow('week', now).since)).toEqual(new Date(2026, 9, 12));
 });
+
+test('month view includes every day of a leap February', () => {
+  const window = activityWindow('month', new Date(2024, 1, 17, 13));
+  expect(new Date(window.since)).toEqual(new Date(2024, 1, 1));
+  expect(new Date(window.until)).toEqual(new Date(2024, 2, 1));
+});
+
+test('year view includes the whole calendar year, including leap day', () => {
+  const window = activityWindow('year', new Date(2024, 9, 17, 13));
+  expect(new Date(window.since)).toEqual(new Date(2024, 0, 1));
+  expect(new Date(window.until)).toEqual(new Date(2025, 0, 1));
+});

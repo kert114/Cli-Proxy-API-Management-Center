@@ -2319,6 +2319,17 @@
     "error_local": "Hoạt động GitHub chỉ có trên kết nối trực tiếp đến localhost.",
     "error_backend": "Proxy này chưa hỗ trợ hoạt động GitHub. Hãy cập nhật proxy cục bộ rồi kết nối lại.",
     "error_unavailable": "Không tải được hoạt động GitHub. Kiểm tra gh auth status và quyền truy cập kho mã trên máy này rồi tải lại.",
-    "checked": "Đã kiểm tra lúc {{at}}"
+    "checked": "Đã kiểm tra lúc {{at}}",
+    "month": "Tháng",
+    "year": "Năm",
+    "created_month": "PR tạo tháng này",
+    "created_year": "PR tạo năm nay",
+    "merged_month": "PR hợp nhất tháng này",
+    "merged_year": "PR hợp nhất năm nay",
+    "commits_month": "Commit tháng này",
+    "commits_year": "Commit năm nay",
+    "activity_month": "Tháng này",
+    "activity_year": "Năm nay",
+    "current_quotas": "Hạn mức hiện tại"
   }
 }

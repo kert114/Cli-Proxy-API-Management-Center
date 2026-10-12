@@ -245,7 +245,13 @@ export function GitHubActivityPanel({
   );
 }
 
-export function GitHubActivity({ refreshToken = 0 }: { refreshToken?: number }) {
+export function GitHubActivity({
+  period,
+  refreshToken = 0,
+}: {
+  period: ActivityPeriod;
+  refreshToken?: number;
+}) {
   const { t, i18n } = useTranslation();
   const apiBase = useAuthStore((state) => state.apiBase);
   const connected = useAuthStore((state) => state.connectionStatus === 'connected');
@@ -254,7 +260,6 @@ export function GitHubActivity({ refreshToken = 0 }: { refreshToken?: number }) 
   const [draftRepository, setDraftRepository] = useState(DEFAULT_REPOSITORY);
   const [editing, setEditing] = useState(false);
   const [invalidRepository, setInvalidRepository] = useState(false);
-  const [period, setPeriod] = useState<ActivityPeriod>('week');
   const [refresh, setRefresh] = useState(0);
   const [state, setState] = useState<LoadState | null>(null);
   const now = useNow();
@@ -319,24 +324,6 @@ export function GitHubActivity({ refreshToken = 0 }: { refreshToken?: number }) 
           </Button>
         </div>
         <div className={styles.controls}>
-          <div className={styles.toggle} role="group" aria-label={t('work_dashboard.period')}>
-            <Button
-              size="sm"
-              variant={period === 'day' ? 'secondary' : 'ghost'}
-              aria-pressed={period === 'day'}
-              onClick={() => setPeriod('day')}
-            >
-              {t('work_dashboard.day')}
-            </Button>
-            <Button
-              size="sm"
-              variant={period === 'week' ? 'secondary' : 'ghost'}
-              aria-pressed={period === 'week'}
-              onClick={() => setPeriod('week')}
-            >
-              {t('work_dashboard.week')}
-            </Button>
-          </div>
           <Button
             variant="secondary"
             size="sm"

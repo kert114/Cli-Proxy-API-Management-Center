@@ -2313,6 +2313,17 @@
     "error_local": "GitHub 활동은 직접 로컬 연결에서만 사용할 수 있습니다.",
     "error_backend": "이 프록시는 아직 GitHub 활동을 지원하지 않습니다. 로컬 프록시를 업데이트하고 다시 연결하세요.",
     "error_unavailable": "GitHub 활동을 불러오지 못했습니다. 이 컴퓨터에서 gh auth status와 저장소 접근 권한을 확인한 후 새로고침하세요.",
-    "checked": "{{at}}에 확인됨"
+    "checked": "{{at}}에 확인됨",
+    "month": "월",
+    "year": "년",
+    "created_month": "이번 달 생성된 PR",
+    "created_year": "올해 생성된 PR",
+    "merged_month": "이번 달 병합된 PR",
+    "merged_year": "올해 병합된 PR",
+    "commits_month": "이번 달 커밋",
+    "commits_year": "올해 커밋",
+    "activity_month": "이번 달",
+    "activity_year": "올해",
+    "current_quotas": "현재 할당량"
   }
 }

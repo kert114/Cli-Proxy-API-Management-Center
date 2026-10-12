@@ -2311,6 +2311,17 @@
     "error_local": "GitHub 活动仅可通过直接本地连接查看。",
     "error_backend": "此代理尚不支持 GitHub 活动。请更新本地代理并重新连接。",
     "error_unavailable": "无法加载 GitHub 活动。请在此电脑检查 gh auth status 和仓库权限，然后刷新。",
-    "checked": "检查时间 {{at}}"
+    "checked": "检查时间 {{at}}",
+    "month": "月",
+    "year": "年",
+    "created_month": "本月新建 PR",
+    "created_year": "今年新建 PR",
+    "merged_month": "本月合并 PR",
+    "merged_year": "今年合并 PR",
+    "commits_month": "本月提交",
+    "commits_year": "今年提交",
+    "activity_month": "本月",
+    "activity_year": "今年",
+    "current_quotas": "当前额度"
   }
 }

@@ -2337,6 +2337,17 @@
     "error_local": "GitHub 活動僅可透過直接本機連線查看。",
     "error_backend": "此代理尚不支援 GitHub 活動。請更新本機代理並重新連線。",
     "error_unavailable": "無法載入 GitHub 活動。請在此電腦檢查 gh auth status 和儲存庫權限，然後重新整理。",
-    "checked": "檢查時間 {{at}}"
+    "checked": "檢查時間 {{at}}",
+    "month": "月",
+    "year": "年",
+    "created_month": "本月新增 PR",
+    "created_year": "今年新增 PR",
+    "merged_month": "本月合併 PR",
+    "merged_year": "今年合併 PR",
+    "commits_month": "本月提交",
+    "commits_year": "今年提交",
+    "activity_month": "本月",
+    "activity_year": "今年",
+    "current_quotas": "目前額度"
   }
 }
