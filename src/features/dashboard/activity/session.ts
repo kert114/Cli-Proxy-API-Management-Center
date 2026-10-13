@@ -9,7 +9,7 @@ const SALT_KEY = 'cliproxy.github.session.v1';
 let fallbackSalt: string | undefined;
 function browserStorage(): Storage | undefined {
   try {
-    return typeof localStorage === 'undefined' ? undefined : localStorage;
+    return typeof sessionStorage === 'undefined' ? undefined : sessionStorage;
   } catch {
     return undefined;
   }
