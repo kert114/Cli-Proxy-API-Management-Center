@@ -12,6 +12,7 @@ export interface GitHubPullRequest {
   mergeable: string;
   state: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface GitHubCommit {
@@ -60,6 +61,8 @@ export interface GitHubActivity {
   url: string;
   defaultBranch: string;
   checkedAt: string;
+  cacheStatus?: 'fresh' | 'refreshed' | 'stale';
+  refreshError?: boolean;
   openCount: number;
   createdCount: number;
   mergedCount: number;
@@ -157,6 +160,8 @@ export function parseGitHubActivity(
       mergeable: text(pr.mergeable),
       state: text(pr.state),
       createdAt: text(pr.created_at),
+      updatedAt:
+        pr.updated_at === undefined || pr.updated_at === null ? undefined : text(pr.updated_at),
     };
   };
   return {
@@ -212,6 +217,13 @@ export function parseGitHubActivity(
     url: githubUrl(data.url, organization || account || repository),
     defaultBranch: text(data.default_branch),
     checkedAt: text(data.checked_at),
+    cacheStatus:
+      data.cache_status === 'fresh' ||
+      data.cache_status === 'refreshed' ||
+      data.cache_status === 'stale'
+        ? data.cache_status
+        : undefined,
+    refreshError: data.refresh_error === undefined ? undefined : boolean(data.refresh_error),
     openCount: count(data.open_count),
     createdCount: count(data.created_count),
     mergedCount: count(data.merged_count),
@@ -238,11 +250,12 @@ export const githubActivityApi = {
     account: string,
     organization: string,
     window: { since: string; until: string },
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    refresh = false
   ) {
     return parseGitHubActivity(
       await apiClient.get<unknown>('/observability/github', {
-        params: { account, organization, ...window },
+        params: { account, organization, ...window, ...(refresh ? { refresh: 1 } : {}) },
         signal,
         timeout: 0,
       }),
@@ -250,3 +263,45 @@ export const githubActivityApi = {
     );
   },
 };
+
+/** Reuses the API boundary parser when restoring persisted snapshots. */
+export function gitHubActivityPayload(data: GitHubActivity) {
+  const pr = (row: GitHubPullRequest) => ({
+    ...row,
+    created_at: row.createdAt,
+    updated_at: row.updatedAt,
+  });
+  return {
+    account:
+      data.scope.kind === 'organization'
+        ? data.scope.account
+        : data.scope.kind === 'account'
+          ? data.scope.login
+          : undefined,
+    organization: data.scope.kind === 'organization' ? data.scope.name : undefined,
+    repository: data.repository,
+    url: data.url,
+    default_branch: data.defaultBranch,
+    checked_at: data.checkedAt,
+    cache_status: data.cacheStatus,
+    refresh_error: data.refreshError,
+    repository_count: data.repositoryCount,
+    issue_count: data.issueCount,
+    review_count: data.reviewCount,
+    open_truncated: data.openTruncated,
+    open_count: data.openCount,
+    created_count: data.createdCount,
+    merged_count: data.mergedCount,
+    commit_count: data.commitCount,
+    repositories: data.repositories.map((row) => ({
+      ...row,
+      default_branch: row.defaultBranch,
+      commit_count: row.commitCount,
+    })),
+    issues: data.issues.map((row) => ({ ...row, created_at: row.createdAt })),
+    reviews: data.reviews,
+    open_prs: data.openPRs.map(pr),
+    created_prs: data.createdPRs.map(pr),
+    commits: data.commits,
+  };
+}

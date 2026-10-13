@@ -125,3 +125,16 @@ test('rejects an account-wide reply for an organization-specific request', () =>
     parseGitHubActivity(accountPayload, { account: 'kert114', organization: '60xAI' })
   ).toThrow();
 });
+
+test('reads optional freshness and update metadata without requiring it on older servers', () => {
+  const snapshot = parseGitHubActivity({
+    ...payload,
+    cache_status: 'stale',
+    refresh_error: true,
+    open_prs: [{ ...payload.open_prs[0], updated_at: '2026-10-13T12:00:00Z' }],
+  });
+  expect(snapshot.cacheStatus).toBe('stale');
+  expect(snapshot.refreshError).toBe(true);
+  expect(snapshot.openPRs[0].updatedAt).toBe('2026-10-13T12:00:00Z');
+  expect(parseGitHubActivity(payload).cacheStatus).toBeUndefined();
+});
