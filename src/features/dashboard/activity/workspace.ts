@@ -81,18 +81,20 @@ export function listedEvents(
 }
 export function activityBuckets(
   window: { since: string; until: string },
-  period: import('./window').ActivityPeriod
+  period: import('./window').ActivityPeriod,
+  now = new Date()
 ) {
   const buckets: { since: number; until: number }[] = [];
+  const until = Math.min(Date.parse(window.until), now.getTime());
   let cursor = new Date(window.since);
-  while (cursor.getTime() < Date.parse(window.until) && buckets.length < 366) {
+  while (cursor.getTime() < until && buckets.length < 366) {
     const next = new Date(cursor);
     if (period === 'year') next.setMonth(next.getMonth() + 1);
     else if (period === 'day') next.setTime(next.getTime() + 60 * 60 * 1000);
     else next.setDate(next.getDate() + 1);
     buckets.push({
       since: cursor.getTime(),
-      until: Math.min(next.getTime(), Date.parse(window.until)),
+      until: Math.min(next.getTime(), until),
     });
     cursor = next;
   }

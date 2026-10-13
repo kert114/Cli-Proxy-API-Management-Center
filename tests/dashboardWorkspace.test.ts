@@ -61,7 +61,7 @@ test('calendar chart buckets count only listed dated events and never imply zero
     since: new Date(2026, 9, 12).toISOString(),
     until: new Date(2026, 9, 19).toISOString(),
   };
-  const buckets = activityBuckets({ since, until }, 'week');
+  const buckets = activityBuckets({ since, until }, 'week', new Date(2026, 9, 19, 12));
   const events = [
     {
       repository: '60xAI/app',
@@ -86,6 +86,23 @@ test('calendar chart buckets count only listed dated events and never imply zero
   expect(listedCount(events, buckets[0])).toBe(2);
   expect(listedCount(events, buckets[0], '60xAI/app')).toBe(1);
   expect(listedCount(events, buckets[1])).toBeNull();
+});
+
+test('day charts stop at the current hour instead of showing future hours', () => {
+  const now = new Date(2026, 9, 13, 10, 30);
+  const buckets = activityBuckets(
+    {
+      since: new Date(2026, 9, 13).toISOString(),
+      until: new Date(2026, 9, 14).toISOString(),
+    },
+    'day',
+    now
+  );
+  expect(buckets).toHaveLength(11);
+  expect(buckets[10]).toEqual({
+    since: new Date(2026, 9, 13, 10).getTime(),
+    until: now.getTime(),
+  });
 });
 
 test('draft, review, newest and repository sorts preserve their declared meaning', () => {
