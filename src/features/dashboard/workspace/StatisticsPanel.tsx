@@ -138,7 +138,7 @@ export function ContributionChart({
             <div
               className={styles.monthLabels}
               aria-hidden="true"
-              style={{ gridTemplateColumns: `repeat(${weeks}, minmax(0, 1fr))` }}
+              style={{ gridTemplateColumns: `repeat(${weeks}, minmax(10px, 1fr))` }}
             >
               {days.map(
                 (day, index) =>
