@@ -1,3 +1,4 @@
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
@@ -69,7 +70,10 @@ export function PullRepositoryCards({ data }: { data: GitHubPulls }) {
   const [repository, setRepository] = useState('');
   const [repositoryFilters, setRepositoryFilters] = useState<Record<string, RepositoryFilter>>({});
   const [search, setSearch] = useState('');
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const [collapsed, setCollapsed] = useLocalStorage<Record<string, boolean>>(
+    'workspace.collapsedRepositories',
+    {}
+  );
   const id = useId();
   const groups = groupPullRequests(data.pullRequests, { filter, repository, search });
   const repositories = [...new Set(data.pullRequests.map((pr) => pr.repository))].sort();
@@ -125,7 +129,7 @@ export function PullRepositoryCards({ data }: { data: GitHubPulls }) {
       <div className={styles.repositories}>
         {groups.map((group, index) => {
           const controls = `${id}-${index}`;
-          const isCollapsed = collapsed.has(group.repository);
+          const isCollapsed = Boolean(collapsed[group.repository]);
           const repositoryFilter = repositoryFilters[group.repository] ?? 'all';
           const visiblePulls = group.pullRequests.filter((pr) =>
             matchesRepositoryFilter(pr, repositoryFilter)
@@ -139,10 +143,7 @@ export function PullRepositoryCards({ data }: { data: GitHubPulls }) {
                   controls={controls}
                   onClick={() =>
                     setCollapsed((previous) => {
-                      const next = new Set(previous);
-                      if (next.has(group.repository)) next.delete(group.repository);
-                      else next.add(group.repository);
-                      return next;
+                      return { ...previous, [group.repository]: !previous[group.repository] };
                     })
                   }
                 />
@@ -225,7 +226,7 @@ export function PullRepositoryCards({ data }: { data: GitHubPulls }) {
 export function PullsPanel() {
   const { t } = useTranslation();
   const snapshot = usePulls();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useLocalStorage('workspace.pullsCollapsed', false);
   const id = useId();
   return (
     <section className={styles.section} aria-label={t('workspace.pull_requests')}>

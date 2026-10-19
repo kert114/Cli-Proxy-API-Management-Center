@@ -9,6 +9,7 @@ const base = {
 };
 const statistics = {
   ...base,
+  organization: '',
   year: 2026,
   days: [
     { date: '2026-01-01', contributions: 0 },
@@ -23,6 +24,7 @@ test('rejects another scope, requested year mismatch, missing days and future da
   for (const value of [
     { ...statistics, account: 'someone-else' },
     { ...statistics, organization: 'other-org' },
+    { ...statistics, organization: '60xAI' },
     { ...statistics, year: 2025 },
     { ...statistics, days: [{ date: '2026-01-02', contributions: 1 }] },
     { ...statistics, days: [{ date: '2026-01-01', contributions: -1 }] },
@@ -98,7 +100,9 @@ test('requests statistics and PRs separately through the v8 client without heavy
     for (const url of requests) {
       expect(url.pathname).toBe('/v8/management/observability/github/dashboard');
       expect(url.searchParams.get('account')).toBe('kert114');
-      expect(url.searchParams.get('organization')).toBe('60xAI');
+      expect(url.searchParams.get('organization')).toBe(
+        url.searchParams.get('section') === 'statistics' ? null : '60xAI'
+      );
       expect(url.searchParams.has('since')).toBe(false);
       expect(url.searchParams.has('until')).toBe(false);
     }

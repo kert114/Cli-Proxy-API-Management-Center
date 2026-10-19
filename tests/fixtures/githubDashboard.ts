@@ -7,7 +7,7 @@ export function statisticsFixture(year = new Date().getUTCFullYear()) {
   );
   return {
     account: 'kert114',
-    organization: '60xAI',
+    organization: '',
     checked_at: new Date().toISOString(),
     stale: false,
     year,

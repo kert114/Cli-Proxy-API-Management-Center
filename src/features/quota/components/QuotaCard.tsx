@@ -7,6 +7,7 @@
  * - success: provider body wearing QuotaBody.module.scss.
  */
 
+import compactStyles from './CompactQuota.module.scss';
 import { useId, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CollapseButton } from '@/components/ui/CollapseButton';
@@ -99,7 +100,8 @@ export function QuotaCard(props: QuotaCardProps) {
 
   return (
     <article
-      className={`${styles.card} ${mountEntranceDelayMs === null ? '' : styles.cardEnter}`}
+      data-compact={compact || undefined}
+      className={`${styles.card} ${compact ? compactStyles.card : ''} ${mountEntranceDelayMs === null ? '' : styles.cardEnter}`}
       style={entranceStyle}
     >
       <header className={styles.head}>

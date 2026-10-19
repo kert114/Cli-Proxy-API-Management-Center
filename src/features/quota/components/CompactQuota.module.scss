@@ -1,13 +1,103 @@
-.header {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
+.card[data-compact] {
+  --text-tertiary: var(--text-secondary);
+  --text-quaternary: var(--text-secondary);
+  --text-muted: var(--text-secondary);
+  padding: 12px;
+  border-radius: 7px;
+  background: var(--bg-primary);
+  gap: 10px;
+  font-family: $font-family;
+  &:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }
-.label {
+.card .header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+.card .label {
   white-space: normal;
   overflow: visible;
+  font-size: 12px;
 }
-.meta {
+.card .meta {
+  display: contents;
   flex-wrap: wrap;
+  gap: 3px 6px;
+  font-family: inherit;
+  font-size: 11px;
+}
+.card .row {
   gap: 4px;
+}
+.card .plan {
+  font-size: 11px;
+  gap: 4px 8px;
+}
+.card .bar {
+  height: 4px;
+}
+.card .credits {
+  padding: 8px 0;
+  margin: 0;
+  gap: 6px;
+}
+.card .creditRow {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 0;
+}
+.card .creditTime {
+  display: flex;
+  gap: 4px;
+  font-family: inherit;
+  font-size: 10px;
+  flex-wrap: wrap;
+}
+.card .creditTitle {
+  font-size: 11px;
+}
+
+.card > header > span:nth-child(2) {
+  font-family: inherit;
+  font-size: 12px;
+}
+.card > div {
+  gap: 8px;
+}
+.card > div > div {
+  gap: 8px;
+}
+.card .percent {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 11px;
+}
+.card .reset {
+  font-family: inherit;
+  font-size: 10px;
+  grid-column: 1;
+}
+.card .relative {
+  font-family: inherit;
+  font-size: 10px;
+  grid-column: 2;
+}
+.card .creditTime .relative::before {
+  content: none;
+}
+.card footer button {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 5px;
+}
+
+:global(:root:not([data-theme='dark'])) .card[data-compact] {
+  --text-secondary: #625c56;
+  --warning-text: #92372b;
 }

@@ -50,19 +50,19 @@ function timestamp(value: unknown): string {
   if (!/^\d{4}-\d{2}-\d{2}T/.test(text) || !Number.isFinite(Date.parse(text))) invalid();
   return text;
 }
-function base(payload: unknown) {
-  if (!isRecord(payload) || payload.account !== ACCOUNT || payload.organization !== ORGANIZATION)
+function base(payload: unknown, organization: string) {
+  if (!isRecord(payload) || payload.account !== ACCOUNT || payload.organization !== organization)
     invalid();
   return {
     raw: payload,
     account: ACCOUNT,
-    organization: ORGANIZATION,
+    organization,
     checkedAt: timestamp(payload.checked_at),
     stale: boolean(payload.stale),
   };
 }
 export function parseGitHubStatistics(payload: unknown, year: number): GitHubStatistics {
-  const { raw, ...snapshot } = base(payload);
+  const { raw, ...snapshot } = base(payload, '');
   if (
     raw.year !== year ||
     !Number.isInteger(year) ||
@@ -88,7 +88,7 @@ export function parseGitHubStatistics(payload: unknown, year: number): GitHubSta
   };
 }
 export function parseGitHubPulls(payload: unknown): GitHubPulls {
-  const { raw, ...snapshot } = base(payload);
+  const { raw, ...snapshot } = base(payload, ORGANIZATION);
   if (!Array.isArray(raw.pull_requests)) invalid();
   const seen = new Set<string>();
   const pullRequests = raw.pull_requests.map((value): DashboardPullRequest => {
@@ -141,7 +141,6 @@ export const githubDashboardApi = {
       await apiClient.get<unknown>(endpoint, {
         params: {
           account: ACCOUNT,
-          organization: ORGANIZATION,
           section: 'statistics',
           year,
           ...(refresh ? { refresh: 1 } : {}),

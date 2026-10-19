@@ -326,7 +326,18 @@ export function MainLayout() {
   const setLanguage = useLanguageStore((state) => state.setLanguage);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isDashboard = location.pathname === '/' || location.pathname === '/dashboard';
+  useLayoutEffect(() => {
+    if (!isDashboard) return;
+    document.documentElement.dataset.dashboard = '';
+    return () => {
+      delete document.documentElement.dataset.dashboard;
+    };
+  }, [isDashboard]);
+  const [otherSidebarCollapsed, setOtherSidebarCollapsed] = useState(false);
+  const [dashboardSidebarCollapsed, setDashboardSidebarCollapsed] = useState(true);
+  const sidebarCollapsed = isDashboard ? dashboardSidebarCollapsed : otherSidebarCollapsed;
+  const setSidebarCollapsed = isDashboard ? setDashboardSidebarCollapsed : setOtherSidebarCollapsed;
   const [authFilesCount, setAuthFilesCount] = useState<number | null>(null);
   const [railTooltip, setRailTooltip] = useState<{
     targetID: string;
@@ -836,7 +847,7 @@ export function MainLayout() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [hideRailTooltip]);
+  }, [hideRailTooltip, setSidebarCollapsed]);
 
   const renderNavBadge = (badge?: number, badgeLabel?: string) =>
     typeof badge === 'number' ? (
@@ -972,7 +983,7 @@ export function MainLayout() {
 
   return (
     <div
-      className={`app-shell ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''} ${
+      className={`app-shell ${isDashboard ? 'dashboard-shell' : ''} ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''} ${
         isPluginResourcePage ? 'plugin-resource-shell' : ''
       }`}
     >

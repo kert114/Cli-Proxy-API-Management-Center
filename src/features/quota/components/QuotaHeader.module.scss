@@ -169,7 +169,7 @@
 .embedded {
   align-items: center;
   .title {
-    font-size: 17px;
+    font-size: 14px;
     letter-spacing: normal;
   }
   .meta {
@@ -185,5 +185,21 @@
     padding: 8px 12px;
     background: var(--bg-secondary);
     color: var(--text-primary);
+  }
+}
+
+.embedded {
+  .copy {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+  .meta,
+  .checked {
+    font-size: 11px;
+  }
+  .primaryAction {
+    padding: 7px 10px;
+    font-size: 12px;
   }
 }

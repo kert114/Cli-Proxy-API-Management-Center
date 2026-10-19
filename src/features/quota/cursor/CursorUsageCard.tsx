@@ -1,3 +1,4 @@
+import compactStyles from '../components/CompactQuota.module.scss';
 import { useId } from 'react';
 import { CollapseButton } from '@/components/ui/CollapseButton';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +34,11 @@ export function CursorUsageCard({
   const loading = state.status === 'loading';
 
   return (
-    <article className={cardStyles.card} aria-label={t('cursor_usage.title')}>
+    <article
+      data-compact={compact || undefined}
+      className={`${cardStyles.card} ${compact ? compactStyles.card : ''}`}
+      aria-label={t('cursor_usage.title')}
+    >
       <header className={cardStyles.head}>
         <span className={cardStyles.iconWrap} title="Cursor">
           <span className={cardStyles.iconFallback}>C</span>

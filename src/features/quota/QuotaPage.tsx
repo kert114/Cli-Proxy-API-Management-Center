@@ -5,6 +5,7 @@
  * both credentials and Cursor.
  */
 
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authFilesApi } from '@/services/api';
@@ -70,7 +71,7 @@ export function QuotaPage({
   onRefreshExtra?: () => void;
 } = {}) {
   const { t } = useTranslation();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useLocalStorage('workspace.quotasCollapsed', false);
   const contentId = useId();
   const [collapsedAccounts, setCollapsedAccounts] = useState<Record<string, boolean>>({});
   const toggleAccount = (key: string) =>

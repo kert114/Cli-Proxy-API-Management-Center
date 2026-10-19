@@ -2404,6 +2404,7 @@
     "contributions": "Lượt đóng góp",
     "active_days": "Ngày hoạt động",
     "peak_day": "Đóng góp cao nhất trong ngày",
+    "all_repositories": "Tất cả kho lưu trữ / UTC",
     "daily_note": "Tổng lịch đóng góp GitHub của {{account}} theo ngày UTC. Bao gồm các loại đóng góp GitHub báo cáo, không chỉ commit.",
     "daily_only": "Chỉ có tổng theo ngày. Không có chi tiết theo giờ hoặc loại đóng góp.",
     "chart_hint": "Di chuột hoặc đưa tiêu điểm vào một ngày để xem số đóng góp. Chọn ngày để xem tổng.",

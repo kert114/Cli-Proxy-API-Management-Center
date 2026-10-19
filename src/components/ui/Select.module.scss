@@ -122,3 +122,16 @@
 .optionHighlighted {
   background: var(--bg-secondary);
 }
+
+:global([data-theme='dark'][data-dashboard]) {
+  .trigger:focus,
+  .trigger[aria-expanded='true'] {
+    box-shadow:
+      var(--shadow),
+      0 0 0 3px var(--primary-10);
+  }
+  .optionActive {
+    border-color: color-mix(in srgb, var(--primary-color) 50%, transparent);
+    background: var(--primary-10);
+  }
+}
