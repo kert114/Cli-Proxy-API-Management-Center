@@ -87,3 +87,9 @@ export const reviewLabel = (review: string) =>
       : review === 'REVIEW_REQUIRED'
         ? 'review_required'
         : 'review_none';
+
+export const REPOSITORY_FILTERS = ['all', 'open', 'draft', 'merged'] as const;
+export type RepositoryFilter = (typeof REPOSITORY_FILTERS)[number];
+export function matchesRepositoryFilter(pr: DashboardPullRequest, filter: RepositoryFilter) {
+  return filter === 'open' ? pr.state === 'OPEN' && !pr.draft : matchesPullFilter(pr, filter);
+}

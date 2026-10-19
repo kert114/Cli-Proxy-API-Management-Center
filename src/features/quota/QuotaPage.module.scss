@@ -220,6 +220,17 @@
 }
 
 .embedded .grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: start;
+}
+
+@media (max-width: 1099px) {
+  .embedded .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .embedded .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

@@ -54,3 +54,17 @@ test('filters lifecycle independently of review/checks and never treats unknown 
     })[0].pullRequests.map((pr) => pr.number)
   ).toEqual([2]);
 });
+
+test('repository tabs separate ready open PRs, drafts and merged PRs', async () => {
+  const { matchesRepositoryFilter } = await import('../src/features/dashboard/workspace/pulls');
+  const open = rows[0];
+  const draft = { ...open, draft: true };
+  const merged = { ...open, state: 'MERGED' as const };
+  expect([open, draft, merged].filter((pr) => matchesRepositoryFilter(pr, 'open'))).toEqual([open]);
+  expect([open, draft, merged].filter((pr) => matchesRepositoryFilter(pr, 'draft'))).toEqual([
+    draft,
+  ]);
+  expect([open, draft, merged].filter((pr) => matchesRepositoryFilter(pr, 'merged'))).toEqual([
+    merged,
+  ]);
+});

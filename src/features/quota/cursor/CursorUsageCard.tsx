@@ -3,28 +3,32 @@ import { CollapseButton } from '@/components/ui/CollapseButton';
 import { useTranslation } from 'react-i18next';
 import { IconRefreshCw } from '@/components/ui/icons';
 import { bindQuotaClasses } from '../types';
+import { compactQuotaClasses } from '../components/compactQuotaClasses';
 import { CursorUsageBody } from './CursorUsageBody';
 import type { CursorUsageState } from './useCursorUsage';
 import cardStyles from '../components/QuotaCard.module.scss';
 import bodyStyles from '../components/QuotaBody.module.scss';
 
-const classes = bindQuotaClasses(bodyStyles, 'CursorUsageCard');
+const baseClasses = bindQuotaClasses(bodyStyles, 'CursorUsageCard');
 
 export function CursorUsageCard({
   state,
   disabled,
   onRefresh,
+  compact = false,
   collapsed = false,
   onToggleCollapse,
 }: {
   state: CursorUsageState;
   disabled: boolean;
   onRefresh: () => void;
+  compact?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }) {
   const { t } = useTranslation();
   const contentId = useId();
+  const classes = compactQuotaClasses(baseClasses, compact);
   const snapshot = state.status === 'success' ? state.snapshot : null;
   const loading = state.status === 'loading';
 
