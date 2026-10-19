@@ -1,3 +1,4 @@
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
@@ -72,6 +73,8 @@ export function ContributionChart({
       } else keyboard(event, index);
     },
   });
+  const firstWeekday = days.length ? (utcDate(days[0].date).getUTCDay() + 6) % 7 : 0;
+  const weeks = Math.ceil((days.length + firstWeekday) / 7);
   return (
     <div className={styles.chart}>
       <div className={styles.tooltip} role="status" aria-live="polite">
@@ -131,6 +134,27 @@ export function ContributionChart({
         </div>
       ) : (
         <div className={styles.heatmapScroll}>
+          {period === 'year' && (
+            <div
+              className={styles.monthLabels}
+              style={{ gridTemplateColumns: `repeat(${weeks}, minmax(0, 1fr))` }}
+            >
+              {days.map(
+                (day, index) =>
+                  (index === 0 || day.date.endsWith('-01')) && (
+                    <span
+                      key={day.date}
+                      style={{ gridColumn: Math.floor((index + firstWeekday) / 7) + 1 }}
+                    >
+                      {utcDate(day.date).toLocaleDateString(i18n.language, {
+                        month: 'short',
+                        timeZone: 'UTC',
+                      })}
+                    </span>
+                  )
+              )}
+            </div>
+          )}
           <div
             className={`${styles.heatmap} ${period === 'month' ? styles.monthHeatmap : ''}`}
             role="group"
@@ -183,7 +207,7 @@ export function StatisticsPanel() {
   const [anchor, setAnchor] = useState(today);
   const [period, setPeriod] = useState<StatisticsPeriod>('year');
   const [view, setView] = useState<'heatmap' | 'line'>('heatmap');
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useLocalStorage('workspace.statisticsCollapsed', false);
   const [selected, setSelected] = useState('');
   const id = useId();
   const year = Number(anchor.slice(0, 4));
@@ -296,6 +320,18 @@ export function StatisticsPanel() {
               ))}
             </div>
           )}
+          <div className={styles.metrics}>
+            {[
+              { label: 'contributions', value: summary.total },
+              { label: 'active_days', value: summary.activeDays },
+              { label: 'peak_day', value: summary.peak },
+            ].map((metric) => (
+              <div key={metric.label}>
+                <strong>{data ? metric.value.toLocaleString(i18n.language) : '—'}</strong>
+                <span>{t(`workspace.${metric.label}`)}</span>
+              </div>
+            ))}
+          </div>
           <div className={styles.navigation}>
             <Button
               size="sm"
@@ -321,19 +357,10 @@ export function StatisticsPanel() {
             </Button>
           </div>
         </div>
-        <div className={styles.metrics}>
-          {[
-            { label: 'contributions', value: summary.total },
-            { label: 'active_days', value: summary.activeDays },
-            { label: 'peak_day', value: summary.peak },
-          ].map((metric) => (
-            <div key={metric.label}>
-              <strong>{data ? metric.value.toLocaleString(i18n.language) : '—'}</strong>
-              <span>{t(`workspace.${metric.label}`)}</span>
-            </div>
-          ))}
-        </div>
-        <p className={styles.note}>{t('workspace.daily_note', { account: ACCOUNT })}</p>
+        <details className={styles.scopeNote}>
+          <summary>{t('workspace.all_repositories')} / UTC</summary>
+          <p>{t('workspace.daily_note', { account: ACCOUNT })}</p>
+        </details>
         {data?.limited && (
           <div className={styles.warning} role="status">
             <p>{t('workspace.limited_contributions')}</p>

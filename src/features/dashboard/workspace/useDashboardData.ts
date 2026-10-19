@@ -138,7 +138,7 @@ export function useStatistics(year: number, enabled = true) {
   );
   return useDashboardData(
     statisticsCache,
-    `statistics:${year}`,
+    `statistics:profile:all-repositories:v2:${year}`,
     currentYear ? 300000 : 30 * 86400000,
     currentYear,
     fetcher,

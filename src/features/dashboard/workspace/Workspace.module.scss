@@ -14,14 +14,14 @@
 .heading {
   justify-content: space-between;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   gap: 12px;
 }
 .headingTitle {
   min-width: 0;
   h2 {
     margin: 0;
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 650;
   }
   a {
@@ -45,10 +45,10 @@
   }
 }
 .panel {
-  padding: 18px;
+  padding: 10px 12px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 9px;
+  border-radius: 7px;
 }
 .section [hidden] {
   display: none !important;
@@ -57,7 +57,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 .toggle {
   gap: 2px;
@@ -76,16 +76,16 @@
 }
 .metrics {
   display: flex;
-  gap: 32px;
+  gap: 14px;
   flex-wrap: wrap;
-  margin: 20px 0 10px;
+  margin: 0;
   > div {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: baseline;
+    gap: 5px;
   }
   strong {
-    font-size: 25px;
+    font-size: 14px;
     font-variant-numeric: tabular-nums;
   }
   span {
@@ -101,7 +101,7 @@
 }
 .chart {
   min-width: 0;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 .tooltip {
   min-height: 24px;
@@ -192,7 +192,7 @@
   flex-wrap: wrap;
   gap: 12px;
   padding-top: 16px;
-  margin-top: 14px;
+  margin-top: 10px;
   border-top: 1px solid var(--border-color);
   font-size: 12px;
   span {
@@ -244,7 +244,7 @@
   min-width: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 9px;
+  border-radius: 7px;
   overflow: hidden;
 }
 .repoHeading {
@@ -280,8 +280,8 @@
   border-bottom: 1px solid var(--border-color);
 }
 .pullList {
-  --pr-row-height: 144px;
-  height: calc(7 * var(--pr-row-height));
+  --pr-row-height: 128px;
+  height: calc(4 * var(--pr-row-height));
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
@@ -295,7 +295,7 @@
   > li {
     box-sizing: border-box;
     height: var(--pr-row-height);
-    padding: 12px 14px;
+    padding: 10px 12px;
     + li {
       border-top: 1px solid var(--border-color);
     }
@@ -310,11 +310,11 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
-  line-height: 1.6;
+  line-height: 1.5;
   overflow-wrap: anywhere;
   &:hover {
     text-decoration: underline;
@@ -414,5 +414,94 @@
     white-space: normal;
     overflow-wrap: anywhere;
     color: var(--text-primary);
+  }
+}
+
+.toolbar {
+  gap: 8px;
+}
+.toolbar :global(.btn.btn-sm),
+.filters :global(.btn.btn-sm),
+.repoFilters :global(.btn.btn-sm),
+.actions :global(.btn.btn-sm) {
+  font-size: 11px;
+  padding: 5px 8px;
+  min-height: 28px;
+  border-radius: 5px;
+}
+.panel {
+  background: var(--bg-primary);
+}
+.repository {
+  background: var(--bg-primary);
+}
+.monthLabels {
+  display: grid;
+  min-width: 680px;
+  gap: 4px;
+  margin-bottom: 7px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  span {
+    overflow: visible;
+  }
+}
+.metrics {
+  margin-left: auto;
+  gap: 12px;
+}
+.metrics span {
+  font-size: 11px;
+}
+.navigation {
+  margin-left: 0;
+  font-size: 12px;
+  gap: 4px;
+}
+.scopeNote {
+  font-size: 11px;
+  color: var(--text-secondary);
+  summary {
+    cursor: pointer;
+    width: fit-content;
+  }
+  p {
+    margin: 6px 0;
+    max-width: 80ch;
+    line-height: 1.5;
+  }
+}
+.tooltip {
+  min-height: 16px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+.legend {
+  margin-top: 6px;
+}
+.search,
+.repositorySelect select {
+  padding: 6px 9px;
+}
+.filters {
+  margin: 8px 0 12px;
+}
+.meta {
+  margin: 4px 0 7px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .metrics {
+    margin-left: 0;
+    gap: 14px;
+  }
+  .pullList {
+    --pr-row-height: 144px;
+  }
+  .badges {
+    gap: 3px;
+  }
+  .badges span {
+    padding: 2px 4px;
   }
 }

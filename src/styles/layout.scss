@@ -1016,3 +1016,35 @@
     }
   }
 }
+
+.dashboard-shell {
+  font-family: Inter, system-ui, sans-serif;
+  .top-gradient-blur {
+    display: none;
+  }
+  .main-content {
+    padding: 76px 24px 24px;
+  }
+  --dashboard-background: var(--bg-secondary);
+  background: var(--dashboard-background);
+  @media (max-width: 768px) {
+    .main-content {
+      padding: 76px 16px 24px;
+    }
+  }
+}
+[data-theme='dark'] .dashboard-shell {
+  --dashboard-background: #101820;
+  --bg-primary: #17232d;
+  --bg-secondary: #101820;
+  --bg-tertiary: #1d2d38;
+  --border-color: #30414e;
+  --border-hover: #567180;
+  --text-primary: #e0e8ed;
+  --text-secondary: #a4b7c3;
+  --text-tertiary: #95a9b6;
+  --text-quaternary: #95a9b6;
+  --primary-color: #7ac8b0;
+  --viz-success: #7ac8b0;
+  --quota-medium-color: #dec17d;
+}

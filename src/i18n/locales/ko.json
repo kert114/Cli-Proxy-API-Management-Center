@@ -2398,6 +2398,7 @@
     "contributions": "기여 수",
     "active_days": "활동 일수",
     "peak_day": "최대 일일 기여 수",
+    "all_repositories": "모든 저장소",
     "daily_note": "{{account}}의 GitHub 기여 달력 합계입니다. UTC 기준 일별 데이터이며 커밋뿐 아니라 GitHub에서 보고한 기여 유형을 포함합니다.",
     "daily_only": "일별 합계만 제공됩니다. 시간별 또는 기여 유형별 내역은 없습니다.",
     "chart_hint": "날짜 위에 커서를 놓거나 포커스를 이동하여 기여 수를 확인하세요. 날짜를 선택하면 일일 합계가 표시됩니다.",

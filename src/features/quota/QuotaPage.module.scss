@@ -234,3 +234,25 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.embedded {
+  gap: 12px;
+  .workbench {
+    gap: 10px;
+  }
+  .grid {
+    gap: 12px;
+  }
+  .search,
+  .sort button[aria-haspopup='listbox'] {
+    height: 30px;
+    border-radius: 5px;
+  }
+  .searchInput {
+    font-size: 12px;
+  }
+  .tabsRow button {
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+}

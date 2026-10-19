@@ -2396,6 +2396,7 @@
     "contributions": "贡献数",
     "active_days": "活跃天数",
     "peak_day": "单日最高贡献数",
+    "all_repositories": "所有仓库",
     "daily_note": "{{account}} 的 GitHub 贡献日历总数，按 UTC 日期统计。包含 GitHub 报告的各类贡献，不仅是提交。",
     "daily_only": "仅提供每日总数，无法显示每小时或贡献类型明细。",
     "chart_hint": "悬停或聚焦日期查看贡献数。选择日期查看当日总数。",
