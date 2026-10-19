@@ -272,19 +272,44 @@
     color: var(--text-secondary);
   }
 }
+.repoFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
 .pullList {
+  --pr-row-height: 144px;
+  height: calc(7 * var(--pr-row-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  &:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: -2px;
+  }
   list-style: none;
   margin: 0;
   padding: 0;
   > li {
-    padding: 14px 16px;
+    box-sizing: border-box;
+    height: var(--pr-row-height);
+    padding: 12px 14px;
     + li {
       border-top: 1px solid var(--border-color);
     }
   }
 }
+.repositoryEmpty {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
 .pullTitle {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);

@@ -26,10 +26,11 @@ import { isQuotaRefreshDisabled, type QuotaFileEntry } from '../logic';
 import { useClaudeResetGrants } from '../providers/claude/ClaudeResetGrants';
 import { ClaudeResetGrantDetails } from '../providers/claude/ClaudeResetGrantDetails';
 import bodyStyles from './QuotaBody.module.scss';
+import { compactQuotaClasses } from './compactQuotaClasses';
 import styles from './QuotaCard.module.scss';
 
 /** Bind provider bodies to the typed quota styling contract. */
-const quotaClasses = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
+const baseQuotaClasses = bindQuotaClasses(bodyStyles, 'QuotaBody.module.scss');
 
 export type QuotaCardProps = {
   entry: QuotaFileEntry;
@@ -41,6 +42,7 @@ export type QuotaCardProps = {
   entranceDelayMs?: number | null;
   onRefresh: () => void;
   onReset: () => void;
+  compact?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 };
@@ -55,11 +57,13 @@ export function QuotaCard(props: QuotaCardProps) {
     entranceDelayMs,
     onRefresh,
     onReset,
+    compact = false,
     collapsed = false,
     onToggleCollapse,
   } = props;
   const { t } = useTranslation();
   const contentId = useId();
+  const quotaClasses = compactQuotaClasses(baseQuotaClasses, compact);
   const adapter = QUOTA_ADAPTERS[entry.type];
   const file = entry.file;
   const displayName = getQuotaDisplayName(file);

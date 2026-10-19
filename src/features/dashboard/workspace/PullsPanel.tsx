@@ -13,6 +13,9 @@ import {
   checksLabel,
   groupPullRequests,
   matchesPullFilter,
+  matchesRepositoryFilter,
+  REPOSITORY_FILTERS,
+  type RepositoryFilter,
   PULL_FILTERS,
   reviewLabel,
   type PullFilter,
@@ -64,6 +67,7 @@ export function PullRepositoryCards({ data }: { data: GitHubPulls }) {
   const { t, i18n } = useTranslation();
   const [filter, setFilter] = useState<PullFilter>('all');
   const [repository, setRepository] = useState('');
+  const [repositoryFilters, setRepositoryFilters] = useState<Record<string, RepositoryFilter>>({});
   const [search, setSearch] = useState('');
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
   const id = useId();
@@ -122,6 +126,10 @@ export function PullRepositoryCards({ data }: { data: GitHubPulls }) {
         {groups.map((group, index) => {
           const controls = `${id}-${index}`;
           const isCollapsed = collapsed.has(group.repository);
+          const repositoryFilter = repositoryFilters[group.repository] ?? 'all';
+          const visiblePulls = group.pullRequests.filter((pr) =>
+            matchesRepositoryFilter(pr, repositoryFilter)
+          );
           return (
             <article className={styles.repository} key={group.repository}>
               <header className={styles.repoHeading}>
@@ -147,28 +155,64 @@ export function PullRepositoryCards({ data }: { data: GitHubPulls }) {
                     {group.repository}
                   </a>
                 </h3>
-                <span>{group.pullRequests.length}</span>
+                <span>
+                  {visiblePulls.length} / {group.pullRequests.length}
+                </span>
               </header>
-              <ul id={controls} hidden={isCollapsed} className={styles.pullList}>
-                {group.pullRequests.map((pr) => (
-                  <li key={pr.url}>
-                    <a
-                      className={styles.pullTitle}
-                      href={pr.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+              <div id={controls} hidden={isCollapsed}>
+                <div
+                  className={styles.repoFilters}
+                  role="group"
+                  aria-label={`${group.repository}: ${t('work_dashboard.status_filter')}`}
+                >
+                  {REPOSITORY_FILTERS.map((value) => (
+                    <Button
+                      key={value}
+                      size="sm"
+                      variant={value === repositoryFilter ? 'secondary' : 'ghost'}
+                      aria-pressed={value === repositoryFilter}
+                      onClick={() =>
+                        setRepositoryFilters((previous) => ({
+                          ...previous,
+                          [group.repository]: value,
+                        }))
+                      }
                     >
-                      <span>#{pr.number}</span> {pr.title}
-                    </a>
-                    <p className={styles.meta}>
-                      {pr.author || t('work_dashboard.unknown_author')} /{' '}
-                      {t('work_dashboard.updated_at')}{' '}
-                      <time dateTime={pr.updatedAt}>{date(pr.updatedAt)}</time>
-                    </p>
-                    <PullBadges pr={pr} />
-                  </li>
-                ))}
-              </ul>
+                      {t(`workspace.filter_${value}`)}
+                    </Button>
+                  ))}
+                </div>
+                <ul
+                  className={styles.pullList}
+                  tabIndex={0}
+                  aria-label={`${group.repository}: ${t('workspace.pull_requests')}`}
+                >
+                  {visiblePulls.map((pr) => (
+                    <li key={pr.url}>
+                      <a
+                        className={styles.pullTitle}
+                        title={pr.title}
+                        href={pr.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span>#{pr.number}</span> {pr.title}
+                      </a>
+                      <p className={styles.meta}>
+                        {pr.author || t('work_dashboard.unknown_author')} /{' '}
+                        {t('work_dashboard.updated_at')}{' '}
+                        <time dateTime={pr.updatedAt}>{date(pr.updatedAt)}</time>
+                      </p>
+                      <PullBadges pr={pr} />
+                    </li>
+                  ))}
+                  {!visiblePulls.length && (
+                    <li className={styles.repositoryEmpty}>
+                      {t('work_dashboard.no_matching_prs')}
+                    </li>
+                  )}
+                </ul>
+              </div>
             </article>
           );
         })}

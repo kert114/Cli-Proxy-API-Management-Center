@@ -440,6 +440,7 @@ export function QuotaPage({
               entry.type === 'cursor' ? (
                 <CursorUsageCard
                   key="cursor"
+                  compact={embedded}
                   collapsed={embedded && Boolean(collapsedAccounts[`${sessionGeneration}:cursor`])}
                   onToggleCollapse={
                     embedded ? () => toggleAccount(`${sessionGeneration}:cursor`) : undefined
@@ -451,6 +452,7 @@ export function QuotaPage({
               ) : loading ? null : (
                 <QuotaCard
                   key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
+                  compact={embedded}
                   collapsed={
                     embedded &&
                     Boolean(
