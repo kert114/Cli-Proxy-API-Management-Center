@@ -1,10 +1,15 @@
 import { useTranslation } from 'react-i18next';
+import { CollapseButton } from '@/components/ui/CollapseButton';
 import { IconRefreshCw } from '@/components/ui/icons';
 import { useCountUp } from '@/hooks/motion';
 import styles from './QuotaHeader.module.scss';
 
 export type QuotaHeaderProps = {
   embedded?: boolean;
+  collapsed?: boolean;
+  onToggle?: () => void;
+  controls?: string;
+  checkedAt?: number;
   totalCount: number;
   loadedCount: number;
   attentionCount: number;
@@ -13,16 +18,13 @@ export type QuotaHeaderProps = {
   onRefreshAll: () => void;
 };
 
-/**
- * 额度页头部：标题领衔 + ▍mono 遥测 meta 行 + 墨色药丸「刷新全部」。
- * 与凭证库头部同语汇（无 eyebrow —— ▍游标挂在 meta 行开头）。
- *
- * 入场：三处 `data-reveal` 交给页面壳的 useRevealGroup 统一编排
- * （标题 0ms → meta 70ms → 动作 140ms → tabs 210ms）。
- */
 export function QuotaHeader(props: QuotaHeaderProps) {
   const {
     embedded,
+    collapsed,
+    onToggle,
+    controls,
+    checkedAt,
     totalCount,
     loadedCount,
     attentionCount,
@@ -31,16 +33,26 @@ export function QuotaHeader(props: QuotaHeaderProps) {
     onRefreshAll,
   } = props;
   const { t } = useTranslation();
-  // 批量结果陆续落地时，「已加载」是页面上唯一滚动的数字
+  // Animate the count as each provider finishes loading.
   const displayLoadedCount = useCountUp(loadedCount);
   const Heading = embedded ? 'h2' : 'h1';
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${embedded ? styles.embedded : ''}`}>
       <div className={styles.copy}>
-        <Heading className={styles.title} data-reveal>
-          {t(embedded ? 'work_dashboard.current_quotas' : 'quota_management.title')}
-        </Heading>
+        <div className={styles.titleRow}>
+          {embedded && onToggle && controls && (
+            <CollapseButton
+              collapsed={collapsed ?? false}
+              onClick={onToggle}
+              label={t('work_dashboard.current_quotas')}
+              controls={controls}
+            />
+          )}
+          <Heading className={styles.title} data-reveal>
+            {t(embedded ? 'work_dashboard.current_quotas' : 'quota_management.title')}
+          </Heading>
+        </div>
         <p className={styles.meta} data-reveal>
           <span className={styles.metaTotal}>
             {t('quota_management.meta_credentials', { count: totalCount })}
@@ -64,6 +76,13 @@ export function QuotaHeader(props: QuotaHeaderProps) {
         </p>
       </div>
       <div className={styles.actions} data-reveal>
+        <span className={styles.checked} role="status" aria-live="polite">
+          {refreshing
+            ? t('workspace.refreshing')
+            : checkedAt
+              ? t('work_dashboard.checked', { at: new Date(checkedAt).toLocaleTimeString() })
+              : ''}
+        </span>
         <button
           type="button"
           className={styles.primaryAction}
@@ -71,7 +90,7 @@ export function QuotaHeader(props: QuotaHeaderProps) {
           disabled={disableControls || refreshing}
         >
           <IconRefreshCw size={14} className={refreshing ? styles.spinning : undefined} />
-          {t('quota_management.refresh_all_credentials')}
+          {t(embedded ? 'workspace.refresh_quotas' : 'quota_management.refresh_all_credentials')}
         </button>
       </div>
     </header>

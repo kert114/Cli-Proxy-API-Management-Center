@@ -218,3 +218,12 @@
     gap: 16px;
   }
 }
+
+.workbench[hidden] {
+  display: none;
+}
+
+.embedded .grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  align-items: start;
+}

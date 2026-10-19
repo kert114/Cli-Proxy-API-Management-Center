@@ -5,7 +5,7 @@
  * both credentials and Cursor.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authFilesApi } from '@/services/api';
 import { Button } from '@/components/ui/Button';
@@ -36,7 +36,6 @@ import {
 } from './constants';
 import {
   buildTabCounts,
-  canRefreshQuotaAfterList,
   classifyQuotaFiles,
   filterEntriesByTab,
   filterEntriesBySearch,
@@ -71,6 +70,11 @@ export function QuotaPage({
   onRefreshExtra?: () => void;
 } = {}) {
   const { t } = useTranslation();
+  const [collapsed, setCollapsed] = useState(false);
+  const contentId = useId();
+  const [refreshingAll, setRefreshingAll] = useState(false);
+  const refreshLock = useRef(false);
+  const [checked, setChecked] = useState<{ generation: number; at: number }>();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
   const resolvedTheme: ResolvedTheme = useThemeStore((state) => state.resolvedTheme);
 
@@ -113,6 +117,7 @@ export function QuotaPage({
       if (!isCurrent()) return;
       setFiles(data?.files || []);
       setFilesGeneration(sessionGeneration);
+      return data?.files || [];
     } catch (err: unknown) {
       if (!isCurrent()) return;
       const message = err instanceof Error ? err.message : t('notification.refresh_failed');
@@ -203,6 +208,7 @@ export function QuotaPage({
     () => paginate(sortedEntries, page, QUOTA_PAGE_SIZE),
     [sortedEntries, page]
   );
+
   const credentialPageItems = useMemo(
     () => pageItems.filter((entry) => entry.type !== 'cursor'),
     [pageItems]
@@ -263,68 +269,48 @@ export function QuotaPage({
   const { batchLoading, loadQuota } = useQuotaBatchLoader();
   const { resettingQuotaName, refreshQuota, resetQuota } = useQuotaActions(disableControls);
 
-  const pendingRefreshRef = useRef<number | null>(null);
-  const prevLoadingRef = useRef(loading);
-
-  // Refresh the list before loading quotas for the current page.
-  const handleRefreshAll = useCallback(() => {
-    if (disableControls) return;
-    pendingRefreshRef.current = sessionGeneration;
-    void refreshCursorUsage();
-    void loadFiles();
-  }, [disableControls, loadFiles, sessionGeneration, refreshCursorUsage]);
+  const handleRefreshAll = useCallback(async () => {
+    if (disableControls || refreshLock.current || batchLoading) return;
+    refreshLock.current = true;
+    setRefreshingAll(true);
+    try {
+      const cursor = refreshCursorUsage();
+      const nextFiles = await loadFiles();
+      if (nextFiles && sessionGeneration === useQuotaStore.getState().cacheGeneration) {
+        await Promise.all([loadQuota(classifyQuotaFiles(nextFiles)), cursor]);
+        if (sessionGeneration === useQuotaStore.getState().cacheGeneration) {
+          setChecked({ generation: sessionGeneration, at: Date.now() });
+        }
+      } else await cursor;
+    } finally {
+      refreshLock.current = false;
+      setRefreshingAll(false);
+    }
+  }, [disableControls, batchLoading, loadFiles, loadQuota, sessionGeneration, refreshCursorUsage]);
 
   const refreshPage = useCallback(() => {
-    handleRefreshAll();
+    void handleRefreshAll();
     onRefreshExtra?.();
   }, [handleRefreshAll, onRefreshExtra]);
   useHeaderRefresh(refreshPage);
-
-  useEffect(() => {
-    const wasLoading = prevLoadingRef.current;
-    prevLoadingRef.current = loading;
-
-    const requestedSession = pendingRefreshRef.current;
-    if (requestedSession === null) return;
-    if (requestedSession !== sessionGeneration) {
-      pendingRefreshRef.current = null;
-      return;
-    }
-    if (loading || !wasLoading) return;
-
-    pendingRefreshRef.current = null;
-    if (
-      canRefreshQuotaAfterList(
-        requestedSession,
-        sessionGeneration,
-        filesGeneration,
-        Boolean(error),
-        disableControls
-      )
-    ) {
-      void loadQuota(credentialPageItems);
-    }
-  }, [
-    disableControls,
-    error,
-    filesGeneration,
-    loading,
-    loadQuota,
-    credentialPageItems,
-    sessionGeneration,
-  ]);
 
   useQuotaAutoLoad(
     entries,
     disableControls ||
       loading ||
       batchLoading ||
+      refreshingAll ||
       Boolean(error) ||
       filesGeneration !== sessionGeneration,
     loadQuota
   );
 
-  const canUseActions = !disableControls && !loading && filesGeneration === sessionGeneration;
+  const canUseActions =
+    !disableControls &&
+    !loading &&
+    !refreshingAll &&
+    !batchLoading &&
+    filesGeneration === sessionGeneration;
 
   /* Animate only the first set of cards; mounted cards capture their initial delay. */
 
@@ -346,18 +332,22 @@ export function QuotaPage({
   const isEmpty = !loading && filteredEntries.length === 0;
 
   return (
-    <div className={styles.page} ref={revealRef}>
+    <div className={`${styles.page} ${embedded ? styles.embedded : ''}`} ref={revealRef}>
       <QuotaHeader
         embedded={embedded}
         totalCount={workbenchEntries.length}
         loadedCount={loadedCount}
         attentionCount={attentionCount}
-        refreshing={loading || batchLoading || cursorState.status === 'loading'}
+        collapsed={embedded ? collapsed : undefined}
+        onToggle={() => setCollapsed((value) => !value)}
+        controls={contentId}
+        checkedAt={checked?.generation === sessionGeneration ? checked.at : undefined}
+        refreshing={refreshingAll || loading || batchLoading || cursorState.status === 'loading'}
         disableControls={disableControls}
         onRefreshAll={handleRefreshAll}
       />
 
-      <section className={styles.workbench}>
+      <section id={contentId} hidden={embedded && collapsed} className={styles.workbench}>
         {/* Keep provider navigation separate from search controls. */}
         <div className={styles.tabsRow} data-reveal>
           <ProviderTabs
