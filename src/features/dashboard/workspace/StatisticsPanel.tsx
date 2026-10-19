@@ -137,6 +137,7 @@ export function ContributionChart({
           {period === 'year' && (
             <div
               className={styles.monthLabels}
+              aria-hidden="true"
               style={{ gridTemplateColumns: `repeat(${weeks}, minmax(0, 1fr))` }}
             >
               {days.map(
@@ -358,7 +359,7 @@ export function StatisticsPanel() {
           </div>
         </div>
         <details className={styles.scopeNote}>
-          <summary>{t('workspace.all_repositories')} / UTC</summary>
+          <summary>{t('workspace.all_repositories')}</summary>
           <p>{t('workspace.daily_note', { account: ACCOUNT })}</p>
         </details>
         {data?.limited && (

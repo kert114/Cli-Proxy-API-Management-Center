@@ -1,15 +1,21 @@
 .card[data-compact] {
+  --text-tertiary: var(--text-secondary);
+  --text-quaternary: var(--text-secondary);
+  --text-muted: var(--text-secondary);
   padding: 12px;
   border-radius: 7px;
   background: var(--bg-primary);
   gap: 10px;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: $font-family;
   &:hover {
     transform: none;
     box-shadow: none;
   }
 }
 .card .header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
   flex-wrap: wrap;
   gap: 3px 8px;
 }
@@ -19,6 +25,7 @@
   font-size: 12px;
 }
 .card .meta {
+  display: contents;
   flex-wrap: wrap;
   gap: 3px 6px;
   font-family: inherit;
@@ -40,10 +47,14 @@
   gap: 6px;
 }
 .card .creditRow {
+  flex-direction: column;
+  align-items: flex-start;
   gap: 3px;
   padding: 0;
 }
 .card .creditTime {
+  display: flex;
+  gap: 4px;
   font-family: inherit;
   font-size: 10px;
   flex-wrap: wrap;
@@ -52,15 +63,41 @@
   font-size: 11px;
 }
 
-.card > header > span:nth-child(2) { font-family: inherit; font-size: 12px; }
-.card > div { gap: 8px; }
-.card > div > div { gap: 8px; }
-.card .header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; }
-.card .meta { display: contents; }
-.card .percent { grid-column: 2; grid-row: 1; font-size: 11px; }
-.card .reset { font-family: inherit; font-size: 10px; grid-column: 1; }
-.card .relative { font-family: inherit; font-size: 10px; grid-column: 2; }
-.card .creditRow { flex-direction: column; align-items: flex-start; }
-.card .creditTime { display: flex; gap: 4px; }
-.card .creditTime .relative::before { content: none; }
-.card footer button { padding: 4px 8px; font-size: 11px; border-radius: 5px; }
+.card > header > span:nth-child(2) {
+  font-family: inherit;
+  font-size: 12px;
+}
+.card > div {
+  gap: 8px;
+}
+.card > div > div {
+  gap: 8px;
+}
+.card .percent {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 11px;
+}
+.card .reset {
+  font-family: inherit;
+  font-size: 10px;
+  grid-column: 1;
+}
+.card .relative {
+  font-family: inherit;
+  font-size: 10px;
+  grid-column: 2;
+}
+.card .creditTime .relative::before {
+  content: none;
+}
+.card footer button {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 5px;
+}
+
+:global(:root:not([data-theme='dark'])) .card[data-compact] {
+  --text-secondary: #625c56;
+  --warning-text: #92372b;
+}

@@ -73,10 +73,7 @@ export function QuotaPage({
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useLocalStorage('workspace.quotasCollapsed', false);
   const contentId = useId();
-  const [collapsedAccounts, setCollapsedAccounts] = useLocalStorage<Record<string, boolean>>(
-    'workspace.collapsedQuotaAccounts',
-    {}
-  );
+  const [collapsedAccounts, setCollapsedAccounts] = useState<Record<string, boolean>>({});
   const toggleAccount = (key: string) =>
     setCollapsedAccounts((previous) => ({ ...previous, [key]: !previous[key] }));
   const [refreshingAll, setRefreshingAll] = useState(false);

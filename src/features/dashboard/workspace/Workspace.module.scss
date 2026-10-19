@@ -46,7 +46,7 @@
 }
 .panel {
   padding: 10px 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 7px;
 }
@@ -56,7 +56,7 @@
 .toolbar {
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 10px;
 }
 .toggle {
@@ -66,9 +66,10 @@
   border-radius: 7px;
 }
 .navigation {
-  margin-left: auto;
+  margin-left: 0;
   flex-wrap: wrap;
-  font-size: 13px;
+  font-size: 12px;
+  gap: 4px;
   strong {
     min-width: 60px;
     text-align: center;
@@ -76,9 +77,10 @@
 }
 .metrics {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
   margin: 0;
+  margin-left: auto;
   > div {
     display: flex;
     align-items: baseline;
@@ -89,7 +91,7 @@
     font-variant-numeric: tabular-nums;
   }
   span {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
   }
 }
@@ -104,9 +106,9 @@
   margin-top: 10px;
 }
 .tooltip {
-  min-height: 24px;
-  margin-bottom: 8px;
-  font-size: 12px;
+  min-height: 16px;
+  margin-bottom: 6px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 .heatmapScroll,
@@ -149,7 +151,7 @@
   gap: 4px;
   font-size: 11px;
   color: var(--text-secondary);
-  margin-top: 12px;
+  margin-top: 6px;
   i {
     width: 12px;
     height: 12px;
@@ -203,7 +205,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  margin: 12px 0 18px;
+  margin: 8px 0 12px;
   span {
     font-variant-numeric: tabular-nums;
   }
@@ -211,7 +213,7 @@
 .search,
 .repositorySelect select {
   min-width: 0;
-  padding: 9px 11px;
+  padding: 6px 9px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
@@ -242,7 +244,7 @@
 }
 .repository {
   min-width: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 7px;
   overflow: hidden;
@@ -325,7 +327,8 @@
   }
 }
 .meta {
-  margin: 6px 0 9px;
+  margin: 4px 0 7px;
+  overflow-wrap: anywhere;
   font-size: 11px;
   color: var(--text-secondary);
 }
@@ -417,9 +420,6 @@
   }
 }
 
-.toolbar {
-  gap: 8px;
-}
 .toolbar :global(.btn.btn-sm),
 .filters :global(.btn.btn-sm),
 .repoFilters :global(.btn.btn-sm),
@@ -429,12 +429,7 @@
   min-height: 28px;
   border-radius: 5px;
 }
-.panel {
-  background: var(--bg-primary);
-}
-.repository {
-  background: var(--bg-primary);
-}
+
 .monthLabels {
   display: grid;
   min-width: 680px;
@@ -446,18 +441,7 @@
     overflow: visible;
   }
 }
-.metrics {
-  margin-left: auto;
-  gap: 12px;
-}
-.metrics span {
-  font-size: 11px;
-}
-.navigation {
-  margin-left: 0;
-  font-size: 12px;
-  gap: 4px;
-}
+
 .scopeNote {
   font-size: 11px;
   color: var(--text-secondary);
@@ -471,25 +455,7 @@
     line-height: 1.5;
   }
 }
-.tooltip {
-  min-height: 16px;
-  margin-bottom: 6px;
-  font-size: 11px;
-}
-.legend {
-  margin-top: 6px;
-}
-.search,
-.repositorySelect select {
-  padding: 6px 9px;
-}
-.filters {
-  margin: 8px 0 12px;
-}
-.meta {
-  margin: 4px 0 7px;
-  overflow-wrap: anywhere;
-}
+
 @media (max-width: 700px) {
   .metrics {
     margin-left: 0;

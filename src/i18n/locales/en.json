@@ -2398,7 +2398,7 @@
     "contributions": "Contributions",
     "active_days": "Active days",
     "peak_day": "Peak daily contributions",
-    "all_repositories": "All repositories",
+    "all_repositories": "All repositories / UTC",
     "daily_note": "GitHub contribution-calendar totals for {{account}}. Daily data in UTC. Counts include contribution types reported by GitHub, not just commits.",
     "daily_only": "Only daily totals are available. Hourly and contribution-type breakdowns are unavailable.",
     "chart_hint": "Hover or focus a day to see its contribution count. Select a day for its total.",

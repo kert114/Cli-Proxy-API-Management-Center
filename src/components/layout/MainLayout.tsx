@@ -327,6 +327,13 @@ export function MainLayout() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isDashboard = location.pathname === '/' || location.pathname === '/dashboard';
+  useLayoutEffect(() => {
+    if (!isDashboard) return;
+    document.documentElement.dataset.dashboard = '';
+    return () => {
+      delete document.documentElement.dataset.dashboard;
+    };
+  }, [isDashboard]);
   const [otherSidebarCollapsed, setOtherSidebarCollapsed] = useState(false);
   const [dashboardSidebarCollapsed, setDashboardSidebarCollapsed] = useState(true);
   const sidebarCollapsed = isDashboard ? dashboardSidebarCollapsed : otherSidebarCollapsed;
