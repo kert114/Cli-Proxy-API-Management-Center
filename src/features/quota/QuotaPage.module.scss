@@ -1,8 +1,6 @@
 @use '../../styles/mixins' as *;
 
-/* ============================================================
- * 额度页壳层：纯布局，视觉细节都在各组件的 colocated 模块里。
- * ============================================================ */
+/* The page owns layout; colocated component modules own visual details. */
 
 .page {
   display: flex;
@@ -12,7 +10,7 @@
   min-width: 0;
 }
 
-/* ---------- 工作区（tabs + 网格 + 分页） ---------- */
+/* Workbench: provider tabs, cards and pagination. */
 
 .workbench {
   display: flex;
@@ -21,7 +19,7 @@
   min-width: 0;
 }
 
-/* 提供商导航独占一行，保留原生横向滚动。 */
+/* Keep provider navigation on its own row with native horizontal scrolling. */
 
 .tabsRow {
   display: flex;
@@ -183,9 +181,7 @@
   overflow-wrap: anywhere;
 }
 
-/* ---------- 卡片网格 ----------
- * 列宽由 CSS 决定（不再用 JS 测量）：额度卡承载水位条，取 340px 下限，
- * 与认证文件页配额模式（.gridQuota）同一档。 */
+/* Use CSS grid with a 340px minimum card width, matching the credential quota view. */
 
 .grid {
   display: grid;
@@ -194,7 +190,7 @@
   align-items: stretch;
 }
 
-/* ---------- 分页 ---------- */
+/* Pagination. */
 
 .pagination {
   display: flex;
@@ -217,4 +213,13 @@
   .page {
     gap: 16px;
   }
+}
+
+.workbench[hidden] {
+  display: none;
+}
+
+.embedded .grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  align-items: start;
 }
