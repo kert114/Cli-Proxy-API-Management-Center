@@ -46,6 +46,7 @@ export function ContributionChart({
     setFocused(undefined);
   }, []);
   const points = useMemo(() => dailyLinePoints(days), [days]);
+  const activePoint = points.find((point) => point.date === active?.date);
   const peak = Math.max(1, ...days.map((day) => day.contributions));
   const label = (day: ContributionDay) =>
     t('workspace.day_count', {
@@ -101,6 +102,9 @@ export function ContributionChart({
           anchor={active.anchor}
           id={tooltipId}
           text={label(activeDay)}
+          geometryRevision={
+            view === 'line' && activePoint ? `${activePoint.x}:${activePoint.y}` : String(weeks)
+          }
           onDismiss={dismissTooltip}
         />
       )}

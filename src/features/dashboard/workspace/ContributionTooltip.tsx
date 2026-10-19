@@ -6,11 +6,13 @@ export function ContributionTooltip({
   anchor,
   id,
   text,
+  geometryRevision,
   onDismiss,
 }: {
   anchor: Element;
   id: string;
   text: string;
+  geometryRevision: string;
   onDismiss: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -67,6 +69,9 @@ export function ContributionTooltip({
     update();
     const observer = new ResizeObserver(update);
     if (ref.current) observer.observe(ref.current);
+    for (let element: Element | null = anchor; element; element = element.parentElement) {
+      observer.observe(element);
+    }
     window.addEventListener('scroll', update, true);
     window.addEventListener('resize', update);
     window.addEventListener('keydown', escape);
@@ -76,7 +81,7 @@ export function ContributionTooltip({
       window.removeEventListener('resize', update);
       window.removeEventListener('keydown', escape);
     };
-  }, [anchor, text, onDismiss]);
+  }, [anchor, text, geometryRevision, onDismiss]);
 
   return createPortal(
     <div
