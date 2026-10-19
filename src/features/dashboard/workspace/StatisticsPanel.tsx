@@ -1,11 +1,12 @@
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { useId, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { ACCOUNT } from '@/services/api/githubDashboard';
 import type { ContributionDay } from '@/services/api/githubDashboard';
 import { CollapseButton } from '@/components/ui/CollapseButton';
 import { SnapshotStatus } from './SnapshotStatus';
+import { ContributionTooltip } from './ContributionTooltip';
 import { useStatistics } from './useDashboardData';
 import {
   adjacentStatisticsYear,
@@ -35,7 +36,15 @@ export function ContributionChart({
   onSelect: (date: string) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const [hovered, setHovered] = useState<ContributionDay>();
+  const [hovered, setHovered] = useState<{ date: string; anchor: Element }>();
+  const [focused, setFocused] = useState<{ date: string; anchor: Element }>();
+  const active = hovered ?? focused;
+  const activeDay = days.find((day) => day.date === active?.date);
+  const tooltipId = useId();
+  const dismissTooltip = useCallback(() => {
+    setHovered(undefined);
+    setFocused(undefined);
+  }, []);
   const points = useMemo(() => dailyLinePoints(days), [days]);
   const peak = Math.max(1, ...days.map((day) => day.contributions));
   const label = (day: ContributionDay) =>
@@ -60,12 +69,21 @@ export function ContributionChart({
   const interaction = (day: ContributionDay, index: number) => ({
     'data-contribution-date': day.date,
     'aria-label': label(day),
+    'aria-labelledby': activeDay?.date === day.date ? tooltipId : undefined,
     'aria-pressed': selected === day.date,
     onClick: () => onSelect(day.date),
-    onMouseEnter: () => setHovered(day),
+    onMouseMove: (event: React.MouseEvent<Element>) => {
+      const anchor = event.currentTarget;
+      setHovered((previous) =>
+        previous?.anchor === anchor ? previous : { date: day.date, anchor }
+      );
+    },
     onMouseLeave: () => setHovered(undefined),
-    onFocus: () => setHovered(day),
-    onBlur: () => setHovered(undefined),
+    onFocus: (event: React.FocusEvent<Element>) => {
+      setHovered(undefined);
+      setFocused({ date: day.date, anchor: event.currentTarget });
+    },
+    onBlur: () => setFocused(undefined),
     onKeyDown: (event: React.KeyboardEvent) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
@@ -77,9 +95,15 @@ export function ContributionChart({
   const weeks = Math.ceil((days.length + firstWeekday) / 7);
   return (
     <div className={styles.chart}>
-      <div className={styles.tooltip} role="status" aria-live="polite">
-        {hovered ? label(hovered) : t('workspace.chart_hint')}
-      </div>
+      <div className={styles.chartHint}>{t('workspace.chart_hint')}</div>
+      {active && activeDay && (
+        <ContributionTooltip
+          anchor={active.anchor}
+          id={tooltipId}
+          text={label(activeDay)}
+          onDismiss={dismissTooltip}
+        />
+      )}
       {!days.length ? (
         <p>{t('workspace.no_days')}</p>
       ) : view === 'line' ? (
@@ -120,9 +144,7 @@ export function ContributionChart({
                 cy={point.y}
                 r={selected === point.date ? 5 : 3}
                 className={styles.linePoint}
-              >
-                <title>{label(point)}</title>
-              </circle>
+              />
             ))}
             <text x="30" y="204">
               {days[0].date}
@@ -369,6 +391,7 @@ export function StatisticsPanel() {
           </div>
         )}
         <ContributionChart
+          key={`${period}:${view}:${anchor}`}
           days={days}
           period={period}
           view={period === 'day' || period === 'week' ? 'line' : view}
