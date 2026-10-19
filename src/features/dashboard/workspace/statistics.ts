@@ -61,3 +61,35 @@ export function adjacentStatisticsYear(
   const anchorYear = Number(anchor.slice(0, 4));
   return startYear !== anchorYear ? startYear : endYear !== anchorYear ? endYear : undefined;
 }
+
+export function contributionFocusIndex({
+  key,
+  index,
+  view,
+  total,
+}: {
+  key: string;
+  index: number;
+  view: 'heatmap' | 'line';
+  total: number;
+}): number | undefined {
+  const offset =
+    key === 'ArrowRight'
+      ? view === 'heatmap'
+        ? 7
+        : 1
+      : key === 'ArrowLeft'
+        ? view === 'heatmap'
+          ? -7
+          : -1
+        : key === 'ArrowDown'
+          ? view === 'heatmap'
+            ? 1
+            : 7
+          : key === 'ArrowUp'
+            ? view === 'heatmap'
+              ? -1
+              : -7
+            : 0;
+  return offset && total > 0 ? Math.max(0, Math.min(total - 1, index + offset)) : undefined;
+}

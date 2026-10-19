@@ -9,6 +9,7 @@ import { useStatistics } from './useDashboardData';
 import {
   adjacentStatisticsYear,
   contributionSummary,
+  contributionFocusIndex,
   dailyLinePoints,
   dateKey,
   periodBounds,
@@ -47,25 +48,12 @@ export function ContributionChart({
       count: day.contributions,
     });
   const keyboard = (event: React.KeyboardEvent, index: number) => {
-    const offset =
-      event.key === 'ArrowRight'
-        ? 1
-        : event.key === 'ArrowLeft'
-          ? -1
-          : event.key === 'ArrowDown'
-            ? view === 'heatmap'
-              ? 1
-              : 7
-            : event.key === 'ArrowUp'
-              ? view === 'heatmap'
-                ? -1
-                : -7
-              : 0;
-    if (!offset) return;
+    const next = contributionFocusIndex({ key: event.key, index, view, total: days.length });
+    if (next === undefined) return;
     event.preventDefault();
     const target = event.currentTarget.parentElement?.querySelectorAll<HTMLElement>(
       '[data-contribution-date]'
-    )[Math.max(0, Math.min(days.length - 1, index + offset))];
+    )[next];
     target?.focus();
   };
   const interaction = (day: ContributionDay, index: number) => ({

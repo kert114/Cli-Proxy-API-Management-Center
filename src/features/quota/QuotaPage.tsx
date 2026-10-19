@@ -72,6 +72,9 @@ export function QuotaPage({
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const contentId = useId();
+  const [collapsedAccounts, setCollapsedAccounts] = useState<Record<string, boolean>>({});
+  const toggleAccount = (key: string) =>
+    setCollapsedAccounts((previous) => ({ ...previous, [key]: !previous[key] }));
   const [refreshingAll, setRefreshingAll] = useState(false);
   const refreshLock = useRef(false);
   const [checked, setChecked] = useState<{ generation: number; at: number }>();
@@ -437,6 +440,10 @@ export function QuotaPage({
               entry.type === 'cursor' ? (
                 <CursorUsageCard
                   key="cursor"
+                  collapsed={embedded && Boolean(collapsedAccounts[`${sessionGeneration}:cursor`])}
+                  onToggleCollapse={
+                    embedded ? () => toggleAccount(`${sessionGeneration}:cursor`) : undefined
+                  }
                   state={cursorState}
                   disabled={disableControls}
                   onRefresh={refreshCursorUsage}
@@ -444,6 +451,22 @@ export function QuotaPage({
               ) : loading ? null : (
                 <QuotaCard
                   key={`${entry.type}:${getQuotaCacheKey(entry.file)}`}
+                  collapsed={
+                    embedded &&
+                    Boolean(
+                      collapsedAccounts[
+                        `${sessionGeneration}:${entry.type}:${getQuotaCacheKey(entry.file)}`
+                      ]
+                    )
+                  }
+                  onToggleCollapse={
+                    embedded
+                      ? () =>
+                          toggleAccount(
+                            `${sessionGeneration}:${entry.type}:${getQuotaCacheKey(entry.file)}`
+                          )
+                      : undefined
+                  }
                   entry={entry}
                   quota={getQuota(entry)}
                   resolvedTheme={resolvedTheme}
@@ -491,12 +514,14 @@ export function QuotaPage({
         )}
 
         {/* Bound the timeline to credentials on the current page. */}
-        <QuotaTimeline
-          entries={credentialPageItems}
-          quotaFor={getQuota}
-          displayNameFor={displayNameFor}
-          resolvedTheme={resolvedTheme}
-        />
+        {!embedded && (
+          <QuotaTimeline
+            entries={credentialPageItems}
+            quotaFor={getQuota}
+            displayNameFor={displayNameFor}
+            resolvedTheme={resolvedTheme}
+          />
+        )}
       </section>
     </div>
   );

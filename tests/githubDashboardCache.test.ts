@@ -57,3 +57,31 @@ test('deduplicates requests, keeps stale data on failure and enforces the manual
   expect(cache.read('pulls')).toBe('old PRs');
   expect(await cache.load('new-connection:pulls', 60000, async () => 'new PRs')).toBe('new PRs');
 });
+
+test('a normal retry after a failed forced refresh cannot pass with the retained cached data', async () => {
+  let now = 1000;
+  const cache = new DashboardCache<string>(() => now);
+  await cache.load('pulls', 60000, async () => 'saved PRs');
+  now = 17000;
+  await expect(
+    cache.load(
+      'pulls',
+      60000,
+      async () => {
+        throw new Error('offline');
+      },
+      true
+    )
+  ).rejects.toThrow('offline');
+  expect(cache.read('pulls')).toBe('saved PRs');
+  now = 18000;
+  await expect(
+    cache.load('pulls', 60000, async () => {
+      throw new Error('still offline');
+    })
+  ).rejects.toThrow('still offline');
+  expect(cache.read('pulls')).toBe('saved PRs');
+  now = 19000;
+  expect(await cache.load('pulls', 60000, async () => 'recovered PRs')).toBe('recovered PRs');
+  expect(await cache.load('pulls', 60000, async () => 'unwanted refetch')).toBe('recovered PRs');
+});
