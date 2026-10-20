@@ -2423,7 +2423,7 @@
     "active_days": "活躍天數",
     "peak_day": "單日最高貢獻數",
     "all_repositories": "所有儲存庫 / UTC",
-    "daily_note": "{{account}} 的 GitHub 貢獻日曆總數，依 UTC 日期統計。包含 GitHub 回報的各類貢獻，不僅是提交。",
+    "daily_note": "{{account}} 的 GitHub 貢獻日曆總數，依 UTC 日期統計。包含符合條件的提交、新建議題、提取請求和審查等貢獻。具體計數以 GitHub 的規則為準。",
     "daily_only": "僅提供每日總數，無法顯示每小時或貢獻類型明細。",
     "chart_hint": "懸停或聚焦日期查看貢獻數。選取日期查看當日總數。",
     "daily_chart": "每日貢獻",

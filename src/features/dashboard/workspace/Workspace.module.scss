@@ -105,7 +105,7 @@
   min-width: 0;
   margin-top: 10px;
 }
-.tooltip {
+.chartHint {
   min-height: 16px;
   margin-bottom: 6px;
   font-size: 11px;
@@ -470,4 +470,21 @@
   .badges span {
     padding: 2px 4px;
   }
+}
+
+.contributionTooltip {
+  position: fixed;
+  z-index: $z-dropdown + 2;
+  pointer-events: none;
+  max-width: min(280px, calc(100vw - 16px));
+  padding: 7px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--floating-surface);
+  color: var(--text-primary);
+  box-shadow: var(--floating-shadow);
+  font-family: $font-family;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
