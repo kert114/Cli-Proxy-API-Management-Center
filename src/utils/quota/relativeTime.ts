@@ -83,7 +83,7 @@ export interface ResetDisplay {
   title?: string;
 }
 
-function createResetFormatters(locale?: string) {
+function createResetFormatters(timeZone: string, locale?: string) {
   const unit = (name: 'day' | 'hour' | 'minute') =>
     new Intl.NumberFormat(locale, { style: 'unit', unit: name, unitDisplay: 'narrow' });
   return {
@@ -91,26 +91,28 @@ function createResetFormatters(locale?: string) {
     hour: unit('hour'),
     minute: unit('minute'),
     short: new Intl.DateTimeFormat(locale, {
+      timeZone,
       weekday: 'short',
       hour: 'numeric',
       minute: '2-digit',
     }),
-    full: new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'short' }),
+    full: new Intl.DateTimeFormat(locale, { timeZone, dateStyle: 'full', timeStyle: 'short' }),
   };
 }
 
 const resetFormatters = new Map<string, ReturnType<typeof createResetFormatters>>();
 
 function getResetFormatters(locale?: string) {
-  const key = locale ?? '';
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const key = `${timeZone}:${locale ?? ''}`;
   const cached = resetFormatters.get(key);
   if (cached) return cached;
 
   let formatters;
   try {
-    formatters = createResetFormatters(locale);
+    formatters = createResetFormatters(timeZone, locale);
   } catch {
-    formatters = createResetFormatters();
+    formatters = createResetFormatters(timeZone);
   }
   resetFormatters.set(key, formatters);
   return formatters;

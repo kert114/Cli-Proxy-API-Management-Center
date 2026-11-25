@@ -93,6 +93,30 @@ describe('buildResetDisplay', () => {
     expect(buildResetDisplay('08-04 14:12', at, NOW, 'en')?.absolute).toMatch(/^Tue,? 2:12\sPM$/);
   });
 
+  test('uses the current time zone when the date is formatted again', () => {
+    // Keep changes to the runtime's default time zone out of the test runner.
+    const run = Bun.spawnSync([
+      process.execPath,
+      '-e',
+      `
+        import { buildResetDisplay } from '@/utils/quota/relativeTime';
+        const now = Date.parse('2026-11-25T09:00:00Z');
+        const reset = Date.parse('2026-11-27T05:40:00Z');
+        const displays = ['Europe/London', 'America/Los_Angeles'].map((zone) => {
+          process.env.TZ = zone;
+          return buildResetDisplay(null, reset, now, 'en-US');
+        });
+        console.log(JSON.stringify(displays));
+      `,
+    ]);
+    expect(run.exitCode).toBe(0);
+    const [london, losAngeles] = JSON.parse(run.stdout.toString());
+    expect(london.absolute).toMatch(/^Fri,? 5:40\sAM$/);
+    expect(london.title).toContain('Friday, November 27');
+    expect(losAngeles.absolute).toMatch(/^Thu,? 9:40\sPM$/);
+    expect(losAngeles.title).toContain('Thursday, November 26');
+  });
+
   test('preserves the full local date and the exact instant', () => {
     const at = new Date(2026, 7, 13, 14, 30);
     const display = buildResetDisplay(null, at.getTime(), NOW, 'en');
