@@ -15,7 +15,6 @@ import { CodexQuotaBody } from '@/features/quota/providers/codex/CodexQuotaBody'
 import { ClaudeQuotaBody } from '@/features/quota/providers/claude/ClaudeQuotaBody';
 import { KimiQuotaBody } from '@/features/quota/providers/kimi/KimiQuotaBody';
 import { QUOTA_CLASS_KEYS, bindQuotaClasses } from '@/features/quota/types';
-import { formatInstantShort } from '@/utils/quota';
 import { DAY_MS, HOUR_MS } from '@/utils/time/durations';
 import type { ClaudeQuotaState, CodexQuotaState, KimiQuotaState } from '@/types';
 
@@ -124,16 +123,16 @@ describe('CodexQuotaBody', () => {
   test('renders a window reset as absolute plus countdown', () => {
     const markup = renderToStaticMarkup(createElement(CodexQuotaBody, { quota, classes }));
 
-    expect(markup).toContain('08-02 18:00');
+    expect(markup).toContain(`dateTime="${new Date(now + 3 * HOUR_MS).toISOString()}"`);
     expect(markup).toContain('quotaResetRelative');
-    expect(markup).toMatch(/3 hours/);
+    expect(markup).toContain('>3h</span>');
   });
 
   test('renders reset-credit expiry in local time with a countdown', () => {
     const markup = renderToStaticMarkup(createElement(CodexQuotaBody, { quota, classes }));
 
-    expect(markup).toContain(formatInstantShort(now + 11 * DAY_MS));
-    expect(markup).toMatch(/11 days/);
+    expect(markup).toContain(new Date(now + 11 * DAY_MS).toISOString());
+    expect(markup).toContain('11d0h');
   });
 
   test('highlights a credit expiring within the final hour', () => {
@@ -220,9 +219,9 @@ describe('KimiQuotaBody', () => {
     };
     const markup = renderToStaticMarkup(createElement(KimiQuotaBody, { quota, classes }));
 
-    expect(markup).toContain(formatInstantShort(resetAtMs));
+    expect(markup).toContain(new Date(resetAtMs).toISOString());
     expect(markup).toContain('quotaResetRelative');
-    expect(markup).toMatch(/3 hours/);
+    expect(markup).toContain('>3h</span>');
     expect(markup).not.toContain('resets in 3h');
   });
 });
@@ -252,9 +251,9 @@ describe('ClaudeQuotaBody', () => {
     };
     const markup = renderToStaticMarkup(createElement(ClaudeQuotaBody, { quota, classes }));
 
-    expect(markup).toContain('08-02 17:00');
-    expect(markup).toContain('08-06 04:00');
-    expect(markup).toMatch(/2 hours/);
-    expect(markup).toMatch(/4 days/);
+    expect(markup).toContain(new Date(now + 2 * HOUR_MS).toISOString());
+    expect(markup).toContain(new Date(now + 4 * DAY_MS).toISOString());
+    expect(markup).toContain('>2h</span>');
+    expect(markup).toContain('4d0h');
   });
 });

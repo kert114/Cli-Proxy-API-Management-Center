@@ -5,7 +5,6 @@ import i18n from '@/i18n';
 import { ClaudeResetGrantDetails } from '@/features/quota/providers/claude/ClaudeResetGrantDetails';
 import { bindQuotaClasses, QUOTA_CLASS_KEYS } from '@/features/quota/types';
 import type { AnthropicResetGrant } from '@/services/api/claudeResetGrants';
-import { formatInstantShort } from '@/utils/quota';
 import { resolveTimeZoneLabel } from '@/utils/time/timezone';
 
 const classes = bindQuotaClasses(
@@ -41,9 +40,9 @@ describe('Claude reset grant details', () => {
     expect(markup).toContain('class="codexResetCreditRow"');
     expect(markup).toContain(resolveTimeZoneLabel());
     expect(markup).toContain('Launch · 2 / 3 resets remaining');
-    expect(markup).toContain(formatInstantShort(expiry));
+    expect(markup).toContain(new Date(expiry).toISOString());
     expect(markup).toContain('class="quotaResetRelative"');
-    expect(markup).toContain('in 11 days');
+    expect(markup).toContain('11d0h');
   });
 
   test('hides empty and spent grants', () => {
@@ -71,7 +70,7 @@ describe('Claude reset grant details', () => {
     const markup = render([
       grant({ paused: true, usableNow: false, endsAt: '2020-01-01T00:00:00Z' }),
     ]);
-    expect(markup).toContain(formatInstantShort(Date.parse('2020-01-01T00:00:00Z')));
+    expect(markup).toContain('2020-01-01T00:00:00.000Z');
     expect(markup).not.toContain('<button');
   });
 

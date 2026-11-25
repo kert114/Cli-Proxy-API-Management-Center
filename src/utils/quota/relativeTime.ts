@@ -1,16 +1,3 @@
-/**
- * Relative time beside absolute time.
- *
- * A quota card used to say `08-13 14:30` and leave the arithmetic to the
- * reader. The absolute instant is what you need to plan around; the relative
- * one ("in 11 days") is what you need to *react* to. Showing both costs one
- * short span and removes the mental subtraction, so every date on a card now
- * carries its own countdown.
- *
- * Pure and clock-free — `nowMs` is always passed in, so every case is directly
- * testable and the caller decides how often it ticks (see `useNow`).
- */
-
 import { DAY_MS, HOUR_MS, MINUTE_MS } from '@/utils/time/durations';
 
 export interface RelativeTimeParts {
@@ -91,21 +78,60 @@ export function formatInstantShort(ms: number): string {
 
 export interface ResetDisplay {
   absolute: string;
-  /** Null when no usable instant was available — render the absolute half alone. */
   relative: string | null;
+  dateTime?: string;
+  title?: string;
+}
+
+function createResetFormatters(timeZone: string, locale?: string) {
+  const unit = (name: 'day' | 'hour' | 'minute') =>
+    new Intl.NumberFormat(locale, { style: 'unit', unit: name, unitDisplay: 'narrow' });
+  return {
+    day: unit('day'),
+    hour: unit('hour'),
+    minute: unit('minute'),
+    short: new Intl.DateTimeFormat(locale, {
+      timeZone,
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+    }),
+    full: new Intl.DateTimeFormat(locale, { timeZone, dateStyle: 'full', timeStyle: 'short' }),
+  };
+}
+
+const resetFormatters = new Map<string, ReturnType<typeof createResetFormatters>>();
+
+function getResetFormatters(locale?: string) {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const key = `${timeZone}:${locale ?? ''}`;
+  const cached = resetFormatters.get(key);
+  if (cached) return cached;
+
+  let formatters;
+  try {
+    formatters = createResetFormatters(timeZone, locale);
+  } catch {
+    formatters = createResetFormatters(timeZone);
+  }
+  resetFormatters.set(key, formatters);
+  return formatters;
+}
+
+function formatResetCountdown(deltaMs: number, format: ReturnType<typeof createResetFormatters>) {
+  const days = Math.floor(deltaMs / DAY_MS);
+  const hours = Math.floor((deltaMs % DAY_MS) / HOUR_MS);
+  const minutes = Math.floor((deltaMs % HOUR_MS) / MINUTE_MS);
+
+  if (days > 0) return format.day.format(days) + format.hour.format(hours);
+  if (hours > 0) return format.hour.format(hours) + (minutes ? format.minute.format(minutes) : '');
+  if (minutes > 0) return format.minute.format(minutes);
+  return '<' + format.minute.format(1);
 }
 
 /**
- * Pair an already-formatted absolute label with a freshly computed relative one.
- *
- * The absolute label wins when present because providers bake it at fetch time
- * and some of them cannot be reproduced at render (`formatCodexResetLabel`
- * resolves `reset_after_seconds` against the fetch-time clock). The instant is
- * only used for the relative half, and its absence degrades to exactly the
- * pre-existing rendering — which is what a store entry cached by an older
- * build, with no `resetAtMs` field, will hit.
- *
- * Returns null when there is nothing worth rendering at all.
+ * Show a local weekday and time beside the live countdown. Older cached
+ * entries and providers without an instant can still supply a display label.
  */
 export function buildResetDisplay(
   absoluteLabel: string | undefined | null,
@@ -114,13 +140,21 @@ export function buildResetDisplay(
   locale?: string
 ): ResetDisplay | null {
   const trimmed = typeof absoluteLabel === 'string' ? absoluteLabel.trim() : '';
-  const absolute = trimmed && trimmed !== '-' ? trimmed : null;
-  const usableMs = typeof atMs === 'number' && Number.isFinite(atMs) ? atMs : null;
+  const date = new Date(atMs ?? NaN);
+  const resetMs = date.getTime();
+  if (!Number.isFinite(resetMs)) {
+    return trimmed && trimmed !== '-' ? { absolute: trimmed, relative: null } : null;
+  }
 
-  if (absolute === null && usableMs === null) return null;
-
+  const format = getResetFormatters(locale);
+  const deltaMs = resetMs - nowMs;
+  let relative = null;
+  if (deltaMs > 0) relative = formatResetCountdown(deltaMs, format);
+  if (deltaMs < 0) relative = formatRelativeInstant(resetMs, nowMs, locale);
   return {
-    absolute: absolute ?? formatInstantShort(usableMs as number),
-    relative: usableMs === null ? null : formatRelativeInstant(usableMs, nowMs, locale),
+    absolute: format.short.format(date),
+    relative,
+    dateTime: date.toISOString(),
+    title: format.full.format(date),
   };
 }

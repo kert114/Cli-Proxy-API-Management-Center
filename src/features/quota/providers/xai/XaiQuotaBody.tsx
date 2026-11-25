@@ -181,10 +181,11 @@ export function XaiQuotaBody({ quota, classes }: QuotaBodyProps<XaiQuotaState>) 
           {headerReset && (
             <span className={classes.codexPlanItem}>
               <span className={classes.codexPlanLabel}>{t('xai_quota.resets_label')}</span>
-              <span className={classes.codexPlanValue}>{headerReset.absolute}</span>
-              {headerReset.relative && (
-                <span className={classes.quotaResetRelative}>{headerReset.relative}</span>
-              )}
+              <QuotaResetLabel
+                display={headerReset}
+                classes={classes}
+                absoluteClassName={classes.codexPlanValue}
+              />
             </span>
           )}
         </div>
