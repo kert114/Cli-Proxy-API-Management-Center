@@ -158,6 +158,9 @@ export function parseAgentActivity(payload: unknown): ActivityHost[] {
       },
     });
   }
+  if (hosts.length > 0 && parsedHosts.length === 0) {
+    throw new Error('Invalid agent activity snapshot');
+  }
   return parsedHosts;
 }
 

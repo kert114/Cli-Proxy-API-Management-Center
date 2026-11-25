@@ -50,6 +50,10 @@ test('rejects a response without a hosts array', () => {
   expect(() => parseAgentActivity({ status: 'ok' })).toThrow();
 });
 
+test('accepts an empty hosts array', () => {
+  expect(parseAgentActivity({ hosts: [] })).toEqual([]);
+});
+
 test('keeps usable hosts when some snapshot sections or host entries are missing', () => {
   const hosts = parseAgentActivity({
     hosts: [
@@ -162,6 +166,11 @@ test.each([
   {
     name: 'invalid snapshot shape',
     respond: snapshotEnvelope(200, '{}'),
+    expected: { status: 'invalidSnapshot' },
+  },
+  {
+    name: 'a nonempty hosts array with no usable entries',
+    respond: snapshotEnvelope(200, JSON.stringify({ hosts: [null] })),
     expected: { status: 'invalidSnapshot' },
   },
   {
