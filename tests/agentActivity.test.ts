@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { parseAgentActivity } from '../src/services/api/agentActivity';
+import { agentActivityApi, parseAgentActivity } from '../src/services/api/agentActivity';
+import { apiClient } from '../src/services/api/client';
 import fixture from './fixtures/agent-activity.json';
 
 describe('agent activity snapshot', () => {
@@ -47,4 +48,32 @@ test('keeps the last sample and marks unavailable sections without inventing usa
 
 test('rejects a response without a hosts array', () => {
   expect(() => parseAgentActivity({ status: 'ok' })).toThrow();
+});
+
+test('recognizes the dashboard outage through the authenticated v8 client', async () => {
+  const server = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    fetch(request) {
+      expect(new URL(request.url).pathname).toBe('/v8/management/observability/agent-activity');
+      expect(request.headers.get('Authorization')).toBe('Bearer synthetic-api-fixture');
+      return Response.json(
+        {
+          error: 'agent_activity_unavailable',
+          message: 'Agent activity dashboard is unavailable.',
+        },
+        { status: 503 }
+      );
+    },
+  });
+
+  try {
+    apiClient.setConfig({ apiBase: server.url.origin, managementKey: 'synthetic-api-fixture' });
+    expect(await agentActivityApi.snapshot(new AbortController().signal)).toEqual({
+      status: 'unavailable',
+    });
+  } finally {
+    server.stop(true);
+    apiClient.setConfig({ apiBase: '', managementKey: '' });
+  }
 });

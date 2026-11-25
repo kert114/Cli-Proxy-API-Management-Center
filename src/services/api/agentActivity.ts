@@ -1,4 +1,5 @@
 import type { ApiError } from '@/types';
+import { isRecord } from '@/utils/helpers';
 import { apiClient } from './client';
 
 export const AGENT_STATES = [
@@ -54,10 +55,7 @@ export interface ActivityHost {
 export type ActivityResult =
   { status: 'ok'; hosts: ActivityHost[] } | { status: 'unavailable' | 'localOnly' | 'unsupported' };
 
-const record = (value: unknown): Record<string, unknown> | undefined =>
-  value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
+const record = (value: unknown) => (isRecord(value) ? value : undefined);
 
 const str = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
 const nonnegative = (value: unknown) =>
