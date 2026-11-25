@@ -83,11 +83,22 @@ describe('formatInstantShort', () => {
 });
 
 describe('buildResetDisplay', () => {
-  test('pairs a baked absolute label with a computed relative one', () => {
-    const display = buildResetDisplay('08-13 14:30', NOW + 11 * DAY_MS, NOW, 'en');
-    expect(display).not.toBeNull();
-    expect(display?.absolute).toBe('08-13 14:30');
-    expect(display?.relative).toContain('11 days');
+  test('distinguishes multi-day reset times to the hour', () => {
+    expect(buildResetDisplay(null, NOW + DAY_MS + 5 * HOUR_MS, NOW, 'en')?.relative).toBe('1d5h');
+    expect(buildResetDisplay(null, NOW + DAY_MS + 20 * HOUR_MS, NOW, 'en')?.relative).toBe('1d20h');
+  });
+
+  test('shows the local weekday and time from the reset instant', () => {
+    const at = new Date(2026, 7, 4, 14, 12).getTime();
+    expect(buildResetDisplay('08-04 14:12', at, NOW, 'en')?.absolute).toMatch(/^Tue,? 2:12\sPM$/);
+  });
+
+  test('preserves the full local date and the exact instant', () => {
+    const at = new Date(2026, 7, 13, 14, 30);
+    const display = buildResetDisplay(null, at.getTime(), NOW, 'en');
+    expect(display?.dateTime).toBe(at.toISOString());
+    expect(display?.title).toContain('Thursday, August 13, 2026');
+    expect(display?.relative).toBe('11d2h');
   });
 
   test('keeps the baked label alone when the instant is missing', () => {
@@ -99,11 +110,15 @@ describe('buildResetDisplay', () => {
     expect(buildResetDisplay('08-13 14:30', undefined, NOW, 'en')?.relative).toBeNull();
   });
 
-  test('derives the absolute half from the instant when no label was baked', () => {
-    const at = NOW + 2 * HOUR_MS;
-    const display = buildResetDisplay(undefined, at, NOW, 'en');
-    expect(display?.absolute).toBe(formatInstantShort(at));
-    expect(display?.relative).toContain('2 hours');
+  test('shows hours and minutes for resets within a day', () => {
+    expect(buildResetDisplay(null, NOW + 90 * MINUTE_MS, NOW, 'en')?.relative).toBe('1h30m');
+    expect(buildResetDisplay(null, NOW + HOUR_MS - 1, NOW, 'en')?.relative).toBe('59m');
+    expect(buildResetDisplay(null, NOW + 1, NOW, 'en')?.relative).toBe('<1m');
+  });
+
+  test('stops showing a countdown when a reset is reached', () => {
+    expect(buildResetDisplay(null, NOW, NOW, 'en')?.relative).toBeNull();
+    expect(buildResetDisplay(null, NOW - HOUR_MS, NOW, 'en')?.relative).toBe('1 hour ago');
   });
 
   test('returns null when there is nothing to render', () => {
@@ -116,12 +131,18 @@ describe('buildResetDisplay', () => {
 
   test('treats a placeholder label with a real instant as renderable', () => {
     const display = buildResetDisplay('-', NOW + DAY_MS, NOW, 'en');
-    expect(display?.absolute).toBe(formatInstantShort(NOW + DAY_MS));
-    expect(display?.relative).toContain('1 day');
+    expect(display?.absolute).toMatch(/^Mon,? 12:00\sPM$/);
+    expect(display?.relative).toBe('1d0h');
   });
 
   test('rejects a non-finite instant', () => {
     expect(buildResetDisplay(undefined, Number.NaN, NOW, 'en')).toBeNull();
-    expect(buildResetDisplay('08-13 14:30', Number.POSITIVE_INFINITY, NOW, 'en')?.relative).toBeNull();
+    expect(
+      buildResetDisplay('08-13 14:30', Number.POSITIVE_INFINITY, NOW, 'en')?.relative
+    ).toBeNull();
+  });
+
+  test('falls back to a usable format for an invalid locale', () => {
+    expect(buildResetDisplay(null, NOW + DAY_MS, NOW, 'invalid!!')?.relative).toBeTruthy();
   });
 });

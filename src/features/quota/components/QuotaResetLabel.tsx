@@ -1,5 +1,5 @@
 /**
- * `08-13 14:30 · in 11 days` — the absolute instant plus its countdown.
+ * `Fri, 2:12 PM · 1d5h` — the local reset time plus its countdown.
  *
  * Shared by every provider body so the two halves can never drift apart in
  * markup or spacing. The separator lives in CSS (`.quotaResetRelative::before`)
@@ -12,14 +12,26 @@ import type { QuotaClassMap } from '../types';
 export interface QuotaResetLabelProps {
   display: ResetDisplay;
   classes: QuotaClassMap;
+  absoluteClassName?: string;
   /** True on the row that recovers first for this credential. */
   soon?: boolean;
 }
 
-export function QuotaResetLabel({ display, classes, soon = false }: QuotaResetLabelProps) {
+export function QuotaResetLabel({
+  display,
+  classes,
+  absoluteClassName = classes.quotaReset,
+  soon = false,
+}: QuotaResetLabelProps) {
   return (
     <>
-      <span className={classes.quotaReset}>{display.absolute}</span>
+      {display.dateTime ? (
+        <time className={absoluteClassName} dateTime={display.dateTime} title={display.title}>
+          {display.absolute}
+        </time>
+      ) : (
+        <span className={absoluteClassName}>{display.absolute}</span>
+      )}
       {display.relative && (
         <span
           className={

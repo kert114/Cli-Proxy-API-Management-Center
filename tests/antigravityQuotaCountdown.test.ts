@@ -4,14 +4,15 @@ import { getNextAntigravityCountdownUpdateDelay } from '@/features/quota/provide
 const MINUTE_MS = 60_000;
 
 describe('Antigravity quota countdown scheduling', () => {
-  test('updates at the next rounded-minute boundary', () => {
-    expect(getNextAntigravityCountdownUpdateDelay([10.5 * MINUTE_MS], 0)).toBe(30_000);
-    expect(getNextAntigravityCountdownUpdateDelay([10 * MINUTE_MS], 0)).toBe(MINUTE_MS);
+  test('updates as the displayed whole minutes decrease', () => {
+    expect(getNextAntigravityCountdownUpdateDelay([10.5 * MINUTE_MS], 0)).toBe(30_001);
+    expect(getNextAntigravityCountdownUpdateDelay([10 * MINUTE_MS], 0)).toBe(1);
+    expect(getNextAntigravityCountdownUpdateDelay([30_000], 0)).toBe(30_000);
   });
 
   test('uses the earliest boundary across quota buckets', () => {
     expect(getNextAntigravityCountdownUpdateDelay([10.75 * MINUTE_MS, 3.25 * MINUTE_MS], 0)).toBe(
-      15_000
+      15_001
     );
   });
 

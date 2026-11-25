@@ -5,7 +5,6 @@ import i18n from '@/i18n';
 import { CursorUsageBody } from '@/features/quota/cursor/CursorUsageBody';
 import type { CursorUsageSnapshot } from '@/services/api/cursorUsage';
 import { bindQuotaClasses, QUOTA_CLASS_KEYS } from '@/features/quota/types';
-import { formatInstantShort, formatRelativeInstant } from '@/utils/quota';
 
 const classes = bindQuotaClasses(
   Object.fromEntries(QUOTA_CLASS_KEYS.map((key) => [key, key])),
@@ -30,11 +29,8 @@ beforeAll(async () => {
 
 test('shows the Cursor billing reset beside each limit in the shared quota format', () => {
   const markup = render(snapshot);
-  const absolute = formatInstantShort(resetMs);
-  const relative = formatRelativeInstant(resetMs, Date.now(), 'en');
-
-  expect(markup.split(absolute).length - 1).toBe(3);
-  expect(markup.split(relative).length - 1).toBe(3);
+  expect(markup.split(new Date(resetMs).toISOString()).length - 1).toBe(3);
+  expect(markup.split('10d12h').length - 1).toBe(3);
   expect(markup).not.toContain('Billing resets');
   expect(markup).not.toContain(new Date(resetMs).toLocaleString('en'));
 });

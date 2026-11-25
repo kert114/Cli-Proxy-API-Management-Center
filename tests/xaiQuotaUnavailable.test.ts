@@ -15,8 +15,6 @@ import { XaiQuotaBody } from '@/features/quota/providers/xai/XaiQuotaBody';
 import { QUOTA_CLASS_KEYS, bindQuotaClasses } from '@/features/quota/types';
 import {
   buildXaiBillingSummary,
-  formatInstantShort,
-  formatQuotaResetTime,
   mergeXaiBillingSummaries,
   resolveXaiSubscriptionPlan,
 } from '@/utils/quota';
@@ -97,7 +95,7 @@ describe('XaiQuotaBody unavailable weekly usage', () => {
     const markup = render(quota);
 
     expect(markup).toContain('Usage unavailable from xAI');
-    expect(markup).toContain(formatQuotaResetTime(WEEKLY_PERIOD_END));
+    expect(markup).toContain(new Date(WEEKLY_PERIOD_END).toISOString());
     expect(markup).not.toContain('Used --');
     expect(markup).not.toContain('Used 0%');
     // Zero-budget zero-used monthly row is hidden while weekly data exists.
@@ -142,7 +140,7 @@ describe('XaiQuotaBody unavailable weekly usage', () => {
     const markup = render(quota);
     expect(markup).toContain('Monthly credits');
     expect(markup).toContain('Usage unavailable from xAI');
-    expect(markup).toContain(formatQuotaResetTime(WEEKLY_PERIOD_END));
+    expect(markup).toContain(new Date(WEEKLY_PERIOD_END).toISOString());
   });
 
   test.each([0, 37])('preserves explicit weekly usage %i with monthly spending', (percent) => {
@@ -194,7 +192,7 @@ describe('XaiQuotaBody unavailable weekly usage', () => {
     expect(markup).toContain('elitePlanValue');
     expect(markup).toContain('SuperGrok Heavy');
     expect(markup).toContain('Resets');
-    expect(markup).toContain(formatInstantShort(Date.parse(WEEKLY_PERIOD_END)));
+    expect(markup).toContain(new Date(WEEKLY_PERIOD_END).toISOString());
     expect(markup).toContain('GrokChat usage');
     expect(markup).toContain('Prepaid');
     expect(markup).toContain('$2.50');
