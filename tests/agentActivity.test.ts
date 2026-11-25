@@ -50,28 +50,105 @@ test('rejects a response without a hosts array', () => {
   expect(() => parseAgentActivity({ status: 'ok' })).toThrow();
 });
 
-test('recognizes the dashboard outage through the authenticated v8 client', async () => {
+test('keeps usable hosts when some snapshot sections or host entries are missing', () => {
+  const hosts = parseAgentActivity({
+    hosts: [
+      {
+        status: 'ok',
+        snapshot: {
+          host: 'partial-host',
+          agents: { status: 'ok', counts: { running: 2, queued: null } },
+          cpu: { status: 'ok', busy_percent: 25 },
+          jobs: { status: 'ok', queued: [{ job_id: 'waiting-1', wait_reason: 'CPU load' }] },
+        },
+      },
+      null,
+      { alias: 'other-host', snapshot: { jobs: { status: 'ok', recent: [] } } },
+    ],
+  });
+  expect(hosts).toHaveLength(2);
+  expect(hosts[0]).toMatchObject({
+    name: 'partial-host',
+    agents: { counts: { running: 2 } },
+    cpu: { percent: 25 },
+    jobs: { available: true, queued: [{ id: 'waiting-1', waitReason: 'CPU load' }], running: [] },
+  });
+  expect(hosts[0].agents.counts?.queued).toBeUndefined();
+  expect(hosts[0].memory.percent).toBeUndefined();
+  expect(hosts[1].jobs).toMatchObject({ available: false, queued: [], running: [] });
+});
+
+test('fetches the fixed loopback snapshot through the authenticated v8 API call', async () => {
+  const requests: unknown[] = [];
   const server = Bun.serve({
     hostname: '127.0.0.1',
     port: 0,
-    fetch(request) {
-      expect(new URL(request.url).pathname).toBe('/v8/management/observability/agent-activity');
-      expect(request.headers.get('Authorization')).toBe('Bearer synthetic-api-fixture');
-      return Response.json(
-        {
-          error: 'agent_activity_unavailable',
-          message: 'Agent activity dashboard is unavailable.',
-        },
-        { status: 503 }
-      );
+    async fetch(request) {
+      requests.push({
+        path: new URL(request.url).pathname,
+        method: request.method,
+        authorization: request.headers.get('Authorization'),
+        payload: request.method === 'POST' ? await request.json() : null,
+      });
+      return Response.json({ status_code: 200, header: {}, body: JSON.stringify(fixture) });
     },
   });
 
   try {
     apiClient.setConfig({ apiBase: server.url.origin, managementKey: 'synthetic-api-fixture' });
-    expect(await agentActivityApi.snapshot(new AbortController().signal)).toEqual({
-      status: 'unavailable',
+    const result = await agentActivityApi.snapshot(new AbortController().signal);
+    expect(requests).toEqual([
+      {
+        path: '/v8/management/requests/api-call',
+        method: 'POST',
+        authorization: 'Bearer synthetic-api-fixture',
+        payload: { method: 'GET', url: 'http://127.0.0.1:8765/api/snapshot', proxy_url: 'direct' },
+      },
+    ]);
+    expect(result).toMatchObject({
+      status: 'ok',
+      hosts: [{ name: 'workstation' }, { name: 'build-vm' }, { name: 'spare-vm' }],
     });
+  } finally {
+    server.stop(true);
+    apiClient.setConfig({ apiBase: '', managementKey: '' });
+  }
+});
+
+const snapshotEnvelope = (statusCode: number, body: string) => () =>
+  Response.json({ status_code: statusCode, header: {}, body });
+
+test.each([
+  {
+    name: 'dashboard connection failure',
+    respond: () => Response.json({ error: 'request failed' }, { status: 502 }),
+    expected: { status: 'unreachable' },
+  },
+  {
+    name: 'non-200 dashboard response',
+    respond: snapshotEnvelope(503, JSON.stringify(fixture)),
+    expected: { status: 'httpError', statusCode: 503 },
+  },
+  {
+    name: 'invalid dashboard JSON',
+    respond: snapshotEnvelope(200, '{broken'),
+    expected: { status: 'invalidSnapshot' },
+  },
+  {
+    name: 'invalid snapshot shape',
+    respond: snapshotEnvelope(200, '{}'),
+    expected: { status: 'invalidSnapshot' },
+  },
+  {
+    name: 'management API failure',
+    respond: () => Response.json({ error: 'forbidden' }, { status: 403 }),
+    expected: { status: 'managementError', statusCode: 403 },
+  },
+])('reports an outage for $name', async ({ respond, expected }) => {
+  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: respond });
+  try {
+    apiClient.setConfig({ apiBase: server.url.origin, managementKey: 'synthetic-api-fixture' });
+    expect(await agentActivityApi.snapshot(new AbortController().signal)).toEqual(expected);
   } finally {
     server.stop(true);
     apiClient.setConfig({ apiBase: '', managementKey: '' });

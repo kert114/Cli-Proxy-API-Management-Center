@@ -132,13 +132,15 @@
     "system_info": "런타임 및 진단"
   },
   "agent_activity": {
+    "outage": "에이전트 활동을 사용할 수 없습니다",
     "status": {
-      "unavailable": "활동 대시보드가 실행 중이 아닙니다",
-      "localOnly": "에이전트 활동을 보려면 로컬 연결이 필요합니다",
-      "unsupported": "이 프록시 버전은 에이전트 활동을 지원하지 않습니다",
-      "error": "에이전트 활동을 불러올 수 없습니다"
+      "unreachable": "로컬 대시보드에 연결할 수 없습니다. CLIProxyAPI가 실행 중인 컴퓨터에서 agent-activity serve --port 8765를 실행한 후 새로고침하세요.",
+      "httpError": "대시보드에서 HTTP {{statusCode}} 응답을 반환했습니다.",
+      "managementError": "프록시 관리 API에서 HTTP {{statusCode}} 응답을 반환했습니다.",
+      "invalidSnapshot": "대시보드에서 잘못된 스냅샷을 반환했습니다.",
+      "timeout": "대시보드 응답을 기다리는 중 요청 시간이 초과되었습니다.",
+      "connectionError": "프록시 관리 API에 연결할 수 없습니다."
     },
-    "start_dashboard": "CLIProxyAPI가 실행 중인 컴퓨터에서 agent-activity serve --port 8765를 실행한 후 새로고침하세요.",
     "empty": "스냅샷에 호스트가 없습니다",
     "unavailable": "사용할 수 없음",
     "unavailable_reason": "사용할 수 없음 · {{reason}}",

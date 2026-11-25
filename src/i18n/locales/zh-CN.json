@@ -132,13 +132,15 @@
     "system_info": "运行与诊断信息"
   },
   "agent_activity": {
+    "outage": "智能体活动不可用",
     "status": {
-      "unavailable": "活动仪表板未运行",
-      "localOnly": "查看智能体活动需要本地连接",
-      "unsupported": "当前代理版本不支持智能体活动",
-      "error": "无法加载智能体活动"
+      "unreachable": "无法连接本地仪表板。请在运行 CLIProxyAPI 的主机上执行 agent-activity serve --port 8765，然后刷新。",
+      "httpError": "仪表板返回了 HTTP {{statusCode}}。",
+      "managementError": "代理管理 API 返回了 HTTP {{statusCode}}。",
+      "invalidSnapshot": "仪表板返回了无效的快照。",
+      "timeout": "等待仪表板响应时请求超时。",
+      "connectionError": "无法连接代理管理 API。"
     },
-    "start_dashboard": "在运行 CLIProxyAPI 的主机上执行 agent-activity serve --port 8765，然后刷新。",
     "empty": "快照中没有主机",
     "unavailable": "不可用",
     "unavailable_reason": "不可用 · {{reason}}",

@@ -132,13 +132,15 @@
     "system_info": "Runtime & chẩn đoán"
   },
   "agent_activity": {
+    "outage": "Hoạt động tác nhân không khả dụng",
     "status": {
-      "unavailable": "Bảng theo dõi chưa chạy",
-      "localOnly": "Hoạt động tác nhân cần kết nối cục bộ",
-      "unsupported": "Phiên bản proxy này chưa hỗ trợ hoạt động tác nhân",
-      "error": "Không tải được hoạt động tác nhân"
+      "unreachable": "Không thể kết nối với bảng theo dõi cục bộ. Chạy agent-activity serve --port 8765 trên máy chạy CLIProxyAPI rồi làm mới.",
+      "httpError": "Bảng theo dõi đã trả về HTTP {{statusCode}}.",
+      "managementError": "API quản lý proxy đã trả về HTTP {{statusCode}}.",
+      "invalidSnapshot": "Bảng theo dõi đã trả về bản chụp không hợp lệ.",
+      "timeout": "Yêu cầu đã hết thời gian chờ phản hồi từ bảng theo dõi.",
+      "connectionError": "Không thể kết nối với API quản lý proxy."
     },
-    "start_dashboard": "Chạy agent-activity serve --port 8765 trên máy chạy CLIProxyAPI rồi làm mới.",
     "empty": "Bản chụp không có máy nào",
     "unavailable": "Không khả dụng",
     "unavailable_reason": "Không khả dụng · {{reason}}",

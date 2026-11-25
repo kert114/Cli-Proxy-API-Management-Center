@@ -132,13 +132,15 @@
     "system_info": "運行與診斷資訊"
   },
   "agent_activity": {
+    "outage": "代理活動無法使用",
     "status": {
-      "unavailable": "活動儀表板未執行",
-      "localOnly": "查看代理活動需要本機連線",
-      "unsupported": "目前的代理伺服器版本不支援代理活動",
-      "error": "無法載入代理活動"
+      "unreachable": "無法連線至本機儀表板。請在執行 CLIProxyAPI 的主機上執行 agent-activity serve --port 8765，然後重新整理。",
+      "httpError": "儀表板傳回 HTTP {{statusCode}}。",
+      "managementError": "代理管理 API 傳回 HTTP {{statusCode}}。",
+      "invalidSnapshot": "儀表板傳回無效的快照。",
+      "timeout": "等待儀表板回應時請求逾時。",
+      "connectionError": "無法連線至代理管理 API。"
     },
-    "start_dashboard": "在執行 CLIProxyAPI 的主機上執行 agent-activity serve --port 8765，然後重新整理。",
     "empty": "快照中沒有主機",
     "unavailable": "無法使用",
     "unavailable_reason": "無法使用 · {{reason}}",

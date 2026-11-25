@@ -1,6 +1,9 @@
 import type { ApiError } from '@/types';
 import { isRecord } from '@/utils/helpers';
-import { apiClient } from './client';
+import { apiCallApi, type ApiCallResult } from './apiCall';
+
+const SNAPSHOT_URL = 'http://127.0.0.1:8765/api/snapshot';
+const SNAPSHOT_TIMEOUT_MS = 15_000;
 
 export const AGENT_STATES = [
   'queued',
@@ -53,7 +56,9 @@ export interface ActivityHost {
 }
 
 export type ActivityResult =
-  { status: 'ok'; hosts: ActivityHost[] } | { status: 'unavailable' | 'localOnly' | 'unsupported' };
+  | { status: 'ok'; hosts: ActivityHost[] }
+  | { status: 'httpError' | 'managementError'; statusCode: number }
+  | { status: 'unreachable' | 'invalidSnapshot' | 'timeout' | 'connectionError' };
 
 const record = (value: unknown) => (isRecord(value) ? value : undefined);
 
@@ -111,12 +116,13 @@ function parseJobs(value: unknown): ActivityJob[] {
 export function parseAgentActivity(payload: unknown): ActivityHost[] {
   const hosts = record(payload)?.hosts;
   if (!Array.isArray(hosts)) throw new Error('Invalid agent activity snapshot');
-  return hosts.map((value: unknown): ActivityHost => {
+  const parsedHosts: ActivityHost[] = [];
+  for (const value of hosts) {
     const entry = record(value);
     const snapshot = record(entry?.snapshot);
     const host = str(snapshot?.host);
     const name = str(entry?.alias) ?? str(entry?.name) ?? host ?? str(entry?.host);
-    if (!name) throw new Error('Agent activity host is missing a name');
+    if (!name) continue;
 
     const agents = record(snapshot?.agents);
     const rawCounts = agents?.status === 'ok' ? record(agents.counts) : undefined;
@@ -128,9 +134,10 @@ export function parseAgentActivity(payload: unknown): ActivityHost[] {
       }
     }
     const jobs = record(snapshot?.jobs);
-    const jobsAvailable = jobs?.status === 'ok';
+    const jobsAvailable =
+      jobs?.status === 'ok' && (Array.isArray(jobs.running) || Array.isArray(jobs.queued));
     const ts = nonnegative(snapshot?.ts);
-    return {
+    parsedHosts.push({
       name,
       host,
       os: str(snapshot?.os),
@@ -151,23 +158,39 @@ export function parseAgentActivity(payload: unknown): ActivityHost[] {
         running: jobsAvailable ? parseJobs(jobs?.running) : [],
         reason: str(jobs?.reason),
       },
-    };
-  });
+    });
+  }
+  return parsedHosts;
 }
 
 export const agentActivityApi = {
   async snapshot(signal: AbortSignal): Promise<ActivityResult> {
+    let response: ApiCallResult;
     try {
-      const data = await apiClient.get<unknown>('/observability/agent-activity', { signal });
-      return { status: 'ok', hosts: parseAgentActivity(data) };
+      response = await apiCallApi.request(
+        { method: 'GET', url: SNAPSHOT_URL, proxy_url: 'direct' },
+        { signal, timeout: SNAPSHOT_TIMEOUT_MS }
+      );
     } catch (error) {
       const apiError = error as ApiError;
-      if (apiError.status === 503 && apiError.apiCode === 'agent_activity_unavailable') {
-        return { status: 'unavailable' };
+      if (apiError.status === 502 && apiError.apiCode === 'request failed') {
+        return { status: 'unreachable' };
       }
-      if (apiError.apiCode === 'agent_activity_local_only') return { status: 'localOnly' };
-      if (apiError.status === 404) return { status: 'unsupported' };
-      throw error;
+      if (apiError.code === 'ECONNABORTED' || apiError.code === 'ETIMEDOUT') {
+        return { status: 'timeout' };
+      }
+      if (apiError.status) return { status: 'managementError', statusCode: apiError.status };
+      return { status: 'connectionError' };
+    }
+
+    if (!response.statusCode) return { status: 'invalidSnapshot' };
+    if (response.statusCode !== 200) {
+      return { status: 'httpError', statusCode: response.statusCode };
+    }
+    try {
+      return { status: 'ok', hosts: parseAgentActivity(response.body) };
+    } catch {
+      return { status: 'invalidSnapshot' };
     }
   },
 };

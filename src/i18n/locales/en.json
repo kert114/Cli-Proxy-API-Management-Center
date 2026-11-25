@@ -132,13 +132,15 @@
     "system_info": "Runtime & diagnostics"
   },
   "agent_activity": {
+    "outage": "Agent activity unavailable",
     "status": {
-      "unavailable": "Dashboard not running",
-      "localOnly": "Agent activity requires a local connection",
-      "unsupported": "This proxy version does not provide agent activity",
-      "error": "Could not load agent activity"
+      "unreachable": "Could not reach the local dashboard. Run agent-activity serve --port 8765 on the machine running CLIProxyAPI, then refresh.",
+      "httpError": "The dashboard returned HTTP {{statusCode}}.",
+      "managementError": "The proxy management API returned HTTP {{statusCode}}.",
+      "invalidSnapshot": "The dashboard returned an invalid snapshot.",
+      "timeout": "The request timed out while waiting for the dashboard.",
+      "connectionError": "Could not reach the proxy management API."
     },
-    "start_dashboard": "Run agent-activity serve --port 8765 on the machine running CLIProxyAPI, then refresh.",
     "empty": "No hosts in the snapshot",
     "unavailable": "Unavailable",
     "unavailable_reason": "Unavailable · {{reason}}",

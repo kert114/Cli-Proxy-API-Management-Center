@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { IconRefreshCw } from '@/components/ui/icons';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
-import { useInterval } from '@/hooks/useInterval';
 import { agentActivityApi, type ActivityResult } from '@/services/api/agentActivity';
 import { apiClient } from '@/services/api/client';
 import { useAuthStore } from '@/stores';
@@ -16,43 +15,48 @@ const REFRESH_MS = 5000;
 
 function AgentActivityView({ revision }: { revision: number }) {
   const { t } = useTranslation();
-  const [result, setResult] = useState<ActivityResult | { status: 'error' }>();
+  const [result, setResult] = useState<ActivityResult>();
   const [refreshing, setRefreshing] = useState(false);
-  const request = useRef<AbortController | null>(null);
-
-  const refresh = useCallback(async () => {
-    if (request.current || apiClient.getConnectionRevision() !== revision) return;
-    const controller = new AbortController();
-    request.current = controller;
-    setRefreshing(true);
-    const isCurrent = () =>
-      !controller.signal.aborted && apiClient.getConnectionRevision() === revision;
-    try {
-      const snapshot = await agentActivityApi.snapshot(controller.signal);
-      if (isCurrent()) setResult(snapshot);
-    } catch {
-      if (isCurrent()) setResult({ status: 'error' });
-    } finally {
-      if (request.current === controller) request.current = null;
-      if (isCurrent()) setRefreshing(false);
-    }
-  }, [revision]);
-
-  const refreshWhenVisible = useCallback(() => {
-    if (!document.hidden) void refresh();
-  }, [refresh]);
+  const refreshRef = useRef<(() => Promise<void>) | undefined>(undefined);
+  const refresh = useCallback(() => refreshRef.current?.(), []);
 
   useEffect(() => {
-    document.addEventListener('visibilitychange', refreshWhenVisible);
-    refreshWhenVisible();
-    return () => {
-      document.removeEventListener('visibilitychange', refreshWhenVisible);
-      request.current?.abort();
-      request.current = null;
+    const controller = new AbortController();
+    let inFlight = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const isCurrent = () =>
+      !controller.signal.aborted && apiClient.getConnectionRevision() === revision;
+    const load = async () => {
+      if (document.hidden || inFlight || !isCurrent()) return;
+      clearTimeout(timer);
+      inFlight = true;
+      setRefreshing(true);
+      try {
+        const snapshot = await agentActivityApi.snapshot(controller.signal);
+        if (isCurrent()) setResult(snapshot);
+      } finally {
+        inFlight = false;
+        if (isCurrent()) {
+          setRefreshing(false);
+          if (!document.hidden) timer = setTimeout(() => void load(), REFRESH_MS);
+        }
+      }
     };
-  }, [refreshWhenVisible]);
+    const onVisibilityChange = () => {
+      if (document.hidden) clearTimeout(timer);
+      else void load();
+    };
+    refreshRef.current = load;
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    void load();
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+      refreshRef.current = undefined;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [revision]);
 
-  useInterval(refreshWhenVisible, REFRESH_MS);
   useHeaderRefresh(refresh);
 
   return (
@@ -78,11 +82,15 @@ function AgentActivityView({ revision }: { revision: number }) {
               result?.status === 'ok'
                 ? t('agent_activity.empty')
                 : result
-                  ? t(`agent_activity.status.${result.status}`)
+                  ? t('agent_activity.outage')
                   : t('common.loading')
             }
             description={
-              result?.status === 'unavailable' ? t('agent_activity.start_dashboard') : undefined
+              result && result.status !== 'ok'
+                ? t(`agent_activity.status.${result.status}`, {
+                    statusCode: 'statusCode' in result ? result.statusCode : undefined,
+                  })
+                : undefined
             }
           />
         </div>
