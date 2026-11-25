@@ -97,6 +97,7 @@
     "status": "連線狀態:"
   },
   "nav": {
+    "agent_activity": "代理活動",
     "dashboard": "儀表板",
     "quick_start": "快速開始",
     "ai_providers": "AI 供應商",
@@ -117,6 +118,7 @@
     "control": "控制"
   },
   "nav_meta": {
+    "agent_activity": "主機資源與工作",
     "dashboard": "運行總覽",
     "quick_start": "APIKEY.FUN 快速設定",
     "ai_providers": "上游模型路由",
@@ -128,6 +130,58 @@
     "logs": "請求追蹤與排查",
     "config_management": "閘道基礎設定",
     "system_info": "運行與診斷資訊"
+  },
+  "agent_activity": {
+    "local_only": "只有連線至本機代理時才能查看代理活動。",
+    "stale_refresh": "已過期 · 上次成功重新整理於{{age}}",
+    "running_jobs_unavailable": "無法取得執行中的工作。",
+    "queued_jobs_unavailable": "無法取得佇列中的工作。",
+    "outage": "代理活動無法使用",
+    "status": {
+      "unreachable": "無法連線至本機儀表板。請在執行 CLIProxyAPI 的主機上執行 agent-activity serve --port 8765，然後重新整理。",
+      "httpError": "儀表板傳回 HTTP {{statusCode}}。",
+      "managementError": "代理管理 API 傳回 HTTP {{statusCode}}。",
+      "invalidSnapshot": "儀表板傳回無效的快照。",
+      "timeout": "等待儀表板回應時請求逾時。",
+      "connectionError": "無法連線至代理管理 API。"
+    },
+    "empty": "快照中沒有主機",
+    "unavailable": "無法使用",
+    "unavailable_reason": "無法使用 · {{reason}}",
+    "stale": "已過期 · 快照建立於 3 分鐘前",
+    "sampled": "取樣於 {{time}}",
+    "metrics": {
+      "cpu": "CPU",
+      "memory": "記憶體",
+      "swap": "交換空間",
+      "disk": "磁碟"
+    },
+    "usage": "{{metric}}使用率",
+    "percent": "{{value}}%",
+    "cores_other": "{{count}} 核心",
+    "capacity": "{{used}} / {{total}} GiB",
+    "load": "1 分鐘負載 {{value}}",
+    "load_oversubscribed": "{{load}} · 超過核心數，達 {{ratio}} 倍",
+    "pressure_level": "壓力：{{level}}",
+    "pressure_levels": {
+      "1": "正常",
+      "2": "警告",
+      "4": "嚴重"
+    },
+    "pressure_stalls": "壓力：部分工作 {{some}}% / 所有工作 {{full}}%（10 秒）",
+    "pressure_unavailable": "無法讀取壓力 · {{reason}}",
+    "agents": "代理",
+    "agent_states": {
+      "queued": "排隊中",
+      "preparing": "準備中",
+      "starting": "啟動中",
+      "running": "執行中",
+      "waiting": "等候中",
+      "waiting_for_children": "等候子工作"
+    },
+    "jobs": "工作",
+    "no_jobs": "沒有執行或排隊中的工作。",
+    "unnamed_job": "未命名工作"
   },
   "dashboard": {
     "hero_verdict_good": "運行平穩",

@@ -17,6 +17,15 @@ export const computeApiUrl = (base: string): string => {
   return `${normalized}${MANAGEMENT_API_PREFIX}`;
 };
 
+export const isLoopbackApiBase = (base: string): boolean => {
+  try {
+    const { hostname } = new URL(normalizeApiBase(base));
+    return hostname === '127.0.0.1' || hostname === '[::1]' || hostname === 'localhost';
+  } catch {
+    return false;
+  }
+};
+
 export const detectApiBaseFromLocation = (): string => {
   try {
     const { protocol, hostname, port } = window.location;

@@ -97,6 +97,7 @@
     "status": "连接状态:"
   },
   "nav": {
+    "agent_activity": "智能体活动",
     "dashboard": "仪表盘",
     "quick_start": "快速开始",
     "ai_providers": "AI 提供商",
@@ -117,6 +118,7 @@
     "control": "控制"
   },
   "nav_meta": {
+    "agent_activity": "主机资源与任务",
     "dashboard": "运行总览",
     "quick_start": "快速配置",
     "ai_providers": "上游模型路由",
@@ -128,6 +130,58 @@
     "logs": "请求追踪与排查",
     "config_management": "网关基础配置",
     "system_info": "运行与诊断信息"
+  },
+  "agent_activity": {
+    "local_only": "仅在连接本地代理时可查看智能体活动。",
+    "stale_refresh": "已过期 · 上次成功刷新于{{age}}",
+    "running_jobs_unavailable": "运行中的任务不可用。",
+    "queued_jobs_unavailable": "排队中的任务不可用。",
+    "outage": "智能体活动不可用",
+    "status": {
+      "unreachable": "无法连接本地仪表板。请在运行 CLIProxyAPI 的主机上执行 agent-activity serve --port 8765，然后刷新。",
+      "httpError": "仪表板返回了 HTTP {{statusCode}}。",
+      "managementError": "代理管理 API 返回了 HTTP {{statusCode}}。",
+      "invalidSnapshot": "仪表板返回了无效的快照。",
+      "timeout": "等待仪表板响应时请求超时。",
+      "connectionError": "无法连接代理管理 API。"
+    },
+    "empty": "快照中没有主机",
+    "unavailable": "不可用",
+    "unavailable_reason": "不可用 · {{reason}}",
+    "stale": "已过期 · 快照生成于 3 分钟前",
+    "sampled": "采样于 {{time}}",
+    "metrics": {
+      "cpu": "CPU",
+      "memory": "内存",
+      "swap": "交换空间",
+      "disk": "磁盘"
+    },
+    "usage": "{{metric}}使用率",
+    "percent": "{{value}}%",
+    "cores_other": "{{count}} 核",
+    "capacity": "{{used}} / {{total}} GiB",
+    "load": "1 分钟负载 {{value}}",
+    "load_oversubscribed": "{{load}} · 超出核心数，达 {{ratio}} 倍",
+    "pressure_level": "压力：{{level}}",
+    "pressure_levels": {
+      "1": "正常",
+      "2": "警告",
+      "4": "严重"
+    },
+    "pressure_stalls": "压力：部分任务 {{some}}% / 全部任务 {{full}}%（10 秒）",
+    "pressure_unavailable": "无法读取压力 · {{reason}}",
+    "agents": "智能体",
+    "agent_states": {
+      "queued": "排队中",
+      "preparing": "准备中",
+      "starting": "启动中",
+      "running": "运行中",
+      "waiting": "等待中",
+      "waiting_for_children": "等待子任务"
+    },
+    "jobs": "任务",
+    "no_jobs": "没有运行或排队中的任务。",
+    "unnamed_job": "未命名任务"
   },
   "dashboard": {
     "hero_verdict_good": "运行平稳",

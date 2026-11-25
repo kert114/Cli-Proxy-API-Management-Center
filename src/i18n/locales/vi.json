@@ -97,6 +97,7 @@
     "status": "Trạng thái kết nối:"
   },
   "nav": {
+    "agent_activity": "Hoạt động tác nhân",
     "dashboard": "Bảng điều khiển",
     "quick_start": "Bắt đầu nhanh",
     "ai_providers": "AI Provider",
@@ -117,6 +118,7 @@
     "control": "Điều khiển"
   },
   "nav_meta": {
+    "agent_activity": "Tài nguyên máy và công việc",
     "dashboard": "Tổng quan vận hành",
     "quick_start": "Thiết lập APIKEY.FUN",
     "ai_providers": "Định tuyến model upstream",
@@ -128,6 +130,59 @@
     "logs": "Truy vết yêu cầu",
     "config_management": "Cấu hình gateway",
     "system_info": "Runtime & chẩn đoán"
+  },
+  "agent_activity": {
+    "local_only": "Chỉ xem được hoạt động tác nhân khi kết nối với proxy cục bộ.",
+    "stale_refresh": "Dữ liệu cũ · lần làm mới thành công gần nhất {{age}}",
+    "running_jobs_unavailable": "Không có dữ liệu về tác vụ đang chạy.",
+    "queued_jobs_unavailable": "Không có dữ liệu về tác vụ đang chờ.",
+    "outage": "Hoạt động tác nhân không khả dụng",
+    "status": {
+      "unreachable": "Không thể kết nối với bảng theo dõi cục bộ. Chạy agent-activity serve --port 8765 trên máy chạy CLIProxyAPI rồi làm mới.",
+      "httpError": "Bảng theo dõi đã trả về HTTP {{statusCode}}.",
+      "managementError": "API quản lý proxy đã trả về HTTP {{statusCode}}.",
+      "invalidSnapshot": "Bảng theo dõi đã trả về bản chụp không hợp lệ.",
+      "timeout": "Yêu cầu đã hết thời gian chờ phản hồi từ bảng theo dõi.",
+      "connectionError": "Không thể kết nối với API quản lý proxy."
+    },
+    "empty": "Bản chụp không có máy nào",
+    "unavailable": "Không khả dụng",
+    "unavailable_reason": "Không khả dụng · {{reason}}",
+    "stale": "Đã cũ · bản chụp quá 3 phút",
+    "sampled": "Lấy mẫu lúc {{time}}",
+    "metrics": {
+      "cpu": "CPU",
+      "memory": "Bộ nhớ",
+      "swap": "Bộ nhớ hoán đổi",
+      "disk": "Ổ đĩa"
+    },
+    "usage": "Mức sử dụng {{metric}}",
+    "percent": "{{value}}%",
+    "cores_one": "{{count}} lõi",
+    "cores_other": "{{count}} lõi",
+    "capacity": "{{used}} / {{total}} GiB",
+    "load": "Tải trong 1 phút {{value}}",
+    "load_oversubscribed": "{{load}} · gấp {{ratio}} lần số lõi",
+    "pressure_level": "Áp lực bộ nhớ {{level}}",
+    "pressure_levels": {
+      "1": "Bình thường",
+      "2": "Cảnh báo",
+      "4": "Nghiêm trọng"
+    },
+    "pressure_stalls": "Áp lực bộ nhớ · một số tác vụ {{some}}% / tất cả {{full}}% (10 giây)",
+    "pressure_unavailable": "Không đọc được áp lực bộ nhớ · {{reason}}",
+    "agents": "Tác nhân",
+    "agent_states": {
+      "queued": "Xếp hàng",
+      "preparing": "Chuẩn bị",
+      "starting": "Khởi động",
+      "running": "Đang chạy",
+      "waiting": "Đang chờ",
+      "waiting_for_children": "Chờ tác vụ con"
+    },
+    "jobs": "Công việc",
+    "no_jobs": "Không có công việc nào đang chạy hoặc xếp hàng.",
+    "unnamed_job": "Công việc chưa có tên"
   },
   "dashboard": {
     "hero_verdict_good": "Mọi hệ thống ổn định",

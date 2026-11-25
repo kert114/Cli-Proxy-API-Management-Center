@@ -97,6 +97,7 @@
     "status": "Connection Status:"
   },
   "nav": {
+    "agent_activity": "Agent activity",
     "dashboard": "Dashboard",
     "quick_start": "Quick Start",
     "ai_providers": "AI Providers",
@@ -117,6 +118,7 @@
     "control": "Control"
   },
   "nav_meta": {
+    "agent_activity": "Host resources and jobs",
     "dashboard": "Operations overview",
     "quick_start": "APIKEY.FUN setup",
     "ai_providers": "Upstream model routing",
@@ -128,6 +130,59 @@
     "logs": "Request tracing",
     "config_management": "Gateway configuration",
     "system_info": "Runtime & diagnostics"
+  },
+  "agent_activity": {
+    "local_only": "Agent activity is available only when connected to a local proxy.",
+    "stale_refresh": "Stale · last successful refresh {{age}}",
+    "running_jobs_unavailable": "Running jobs unavailable.",
+    "queued_jobs_unavailable": "Queued jobs unavailable.",
+    "outage": "Agent activity unavailable",
+    "status": {
+      "unreachable": "Could not reach the local dashboard. Run agent-activity serve --port 8765 on the machine running CLIProxyAPI, then refresh.",
+      "httpError": "The dashboard returned HTTP {{statusCode}}.",
+      "managementError": "The proxy management API returned HTTP {{statusCode}}.",
+      "invalidSnapshot": "The dashboard returned an invalid snapshot.",
+      "timeout": "The request timed out while waiting for the dashboard.",
+      "connectionError": "Could not reach the proxy management API."
+    },
+    "empty": "No hosts in the snapshot",
+    "unavailable": "Unavailable",
+    "unavailable_reason": "Unavailable · {{reason}}",
+    "stale": "Stale · snapshot older than 3 minutes",
+    "sampled": "Sampled {{time}}",
+    "metrics": {
+      "cpu": "CPU",
+      "memory": "Memory",
+      "swap": "Swap",
+      "disk": "Disk"
+    },
+    "usage": "{{metric}} usage",
+    "percent": "{{value}}%",
+    "cores_one": "{{count}} core",
+    "cores_other": "{{count}} cores",
+    "capacity": "{{used}} / {{total}} GiB",
+    "load": "1 min load {{value}}",
+    "load_oversubscribed": "{{load}} · {{ratio}}× oversubscribed",
+    "pressure_level": "Pressure {{level}}",
+    "pressure_levels": {
+      "1": "Normal",
+      "2": "Warning",
+      "4": "Critical"
+    },
+    "pressure_stalls": "Pressure {{some}}% some / {{full}}% full (10s)",
+    "pressure_unavailable": "Pressure unavailable · {{reason}}",
+    "agents": "Agents",
+    "agent_states": {
+      "queued": "Queued",
+      "preparing": "Preparing",
+      "starting": "Starting",
+      "running": "Running",
+      "waiting": "Waiting",
+      "waiting_for_children": "Waiting on children"
+    },
+    "jobs": "Jobs",
+    "no_jobs": "No running or queued jobs.",
+    "unnamed_job": "Unnamed job"
   },
   "dashboard": {
     "hero_verdict_good": "All systems steady",

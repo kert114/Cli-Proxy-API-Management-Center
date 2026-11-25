@@ -97,6 +97,7 @@
     "status": "연결 상태:"
   },
   "nav": {
+    "agent_activity": "에이전트 활동",
     "dashboard": "대시보드",
     "quick_start": "빠른 시작",
     "ai_providers": "AI 공급자",
@@ -117,6 +118,7 @@
     "control": "제어"
   },
   "nav_meta": {
+    "agent_activity": "호스트 리소스 및 작업",
     "dashboard": "운영 개요",
     "quick_start": "APIKEY.FUN 설정",
     "ai_providers": "업스트림 모델 라우팅",
@@ -128,6 +130,59 @@
     "logs": "요청 추적",
     "config_management": "게이트웨이 설정",
     "system_info": "런타임 및 진단"
+  },
+  "agent_activity": {
+    "local_only": "로컬 프록시에 연결된 경우에만 에이전트 활동을 볼 수 있습니다.",
+    "stale_refresh": "오래된 데이터 · 마지막 새로고침 성공: {{age}}",
+    "running_jobs_unavailable": "실행 중인 작업 목록을 사용할 수 없습니다.",
+    "queued_jobs_unavailable": "대기 중인 작업 목록을 사용할 수 없습니다.",
+    "outage": "에이전트 활동을 사용할 수 없습니다",
+    "status": {
+      "unreachable": "로컬 대시보드에 연결할 수 없습니다. CLIProxyAPI가 실행 중인 컴퓨터에서 agent-activity serve --port 8765를 실행한 후 새로고침하세요.",
+      "httpError": "대시보드에서 HTTP {{statusCode}} 응답을 반환했습니다.",
+      "managementError": "프록시 관리 API에서 HTTP {{statusCode}} 응답을 반환했습니다.",
+      "invalidSnapshot": "대시보드에서 잘못된 스냅샷을 반환했습니다.",
+      "timeout": "대시보드 응답을 기다리는 중 요청 시간이 초과되었습니다.",
+      "connectionError": "프록시 관리 API에 연결할 수 없습니다."
+    },
+    "empty": "스냅샷에 호스트가 없습니다",
+    "unavailable": "사용할 수 없음",
+    "unavailable_reason": "사용할 수 없음 · {{reason}}",
+    "stale": "오래된 데이터 · 3분이 지난 스냅샷",
+    "sampled": "{{time}}에 수집됨",
+    "metrics": {
+      "cpu": "CPU",
+      "memory": "메모리",
+      "swap": "스왑",
+      "disk": "디스크"
+    },
+    "usage": "{{metric}} 사용량",
+    "percent": "{{value}}%",
+    "cores_one": "{{count}}코어",
+    "cores_other": "{{count}}코어",
+    "capacity": "{{used}} / {{total}} GiB",
+    "load": "1분 부하 {{value}}",
+    "load_oversubscribed": "{{load}} · 코어 수의 {{ratio}}배",
+    "pressure_level": "메모리 압력 {{level}}",
+    "pressure_levels": {
+      "1": "정상",
+      "2": "경고",
+      "4": "위험"
+    },
+    "pressure_stalls": "메모리 지연 · 일부 {{some}}% / 전체 {{full}}% (10초)",
+    "pressure_unavailable": "메모리 압력을 확인할 수 없음 · {{reason}}",
+    "agents": "에이전트",
+    "agent_states": {
+      "queued": "대기열",
+      "preparing": "준비 중",
+      "starting": "시작 중",
+      "running": "실행 중",
+      "waiting": "대기 중",
+      "waiting_for_children": "하위 작업 대기"
+    },
+    "jobs": "작업",
+    "no_jobs": "실행 중이거나 대기열에 있는 작업이 없습니다.",
+    "unnamed_job": "이름 없는 작업"
   },
   "dashboard": {
     "hero_verdict_good": "모든 시스템 정상",
