@@ -97,6 +97,7 @@
     "status": "Статус подключения:"
   },
   "nav": {
+    "agent_activity": "Активность агентов",
     "dashboard": "Панель",
     "quick_start": "Быстрый старт",
     "ai_providers": "Поставщики AI",
@@ -116,6 +117,7 @@
     "control": "Управление"
   },
   "nav_meta": {
+    "agent_activity": "Ресурсы хостов и задачи",
     "dashboard": "Обзор работы",
     "quick_start": "Настройка APIKEY.FUN",
     "ai_providers": "Маршрутизация моделей",
@@ -127,6 +129,55 @@
     "logs": "Трассировка запросов",
     "config_management": "Базовая конфигурация шлюза",
     "system_info": "Состояние и диагностика"
+  },
+  "agent_activity": {
+    "status": {
+      "unavailable": "Панель активности не запущена",
+      "localOnly": "Для просмотра активности агентов требуется локальное подключение",
+      "unsupported": "Эта версия прокси не поддерживает просмотр активности агентов",
+      "error": "Не удалось загрузить активность агентов"
+    },
+    "start_dashboard": "Выполните agent-activity serve --port 8765 на компьютере с CLIProxyAPI и обновите страницу.",
+    "empty": "В снимке нет хостов",
+    "unavailable": "Недоступно",
+    "unavailable_reason": "Недоступно · {{reason}}",
+    "stale": "Устарело · снимок старше 3 минут",
+    "sampled": "Снимок в {{time}}",
+    "metrics": {
+      "cpu": "ЦП",
+      "memory": "Память",
+      "swap": "Подкачка",
+      "disk": "Диск"
+    },
+    "usage": "Использование ресурса «{{metric}}»",
+    "percent": "{{value}}%",
+    "cores_one": "{{count}} ядро",
+    "cores_few": "{{count}} ядра",
+    "cores_many": "{{count}} ядер",
+    "cores_other": "{{count}} ядра",
+    "capacity": "{{used}} / {{total}} ГиБ",
+    "load": "Нагрузка за 1 мин {{value}}",
+    "load_oversubscribed": "{{load}} · в {{ratio}} раза выше числа ядер",
+    "pressure_level": "Давление на память · {{level}}",
+    "pressure_levels": {
+      "1": "Нормальное",
+      "2": "Повышенное",
+      "4": "Критическое"
+    },
+    "pressure_stalls": "Задержки · {{some}}% частичные / {{full}}% полные (10 с)",
+    "pressure_unavailable": "Данные о давлении на память недоступны · {{reason}}",
+    "agents": "Агенты",
+    "agent_states": {
+      "queued": "В очереди",
+      "preparing": "Подготовка",
+      "starting": "Запуск",
+      "running": "Работают",
+      "waiting": "Ожидают",
+      "waiting_for_children": "Ждут дочерние задачи"
+    },
+    "jobs": "Задачи",
+    "no_jobs": "Нет выполняемых задач или задач в очереди.",
+    "unnamed_job": "Задача без названия"
   },
   "dashboard": {
     "hero_verdict_good": "Всё стабильно",
