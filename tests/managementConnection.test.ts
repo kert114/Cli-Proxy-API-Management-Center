@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { computeApiUrl, normalizeApiBase } from '../src/utils/connection';
+import { computeApiUrl, isLoopbackApiBase, normalizeApiBase } from '../src/utils/connection';
 import { resolvePluginAssetURL } from '../src/features/plugins/pluginResources';
 
 describe('v8-only management connections', () => {
@@ -29,5 +29,27 @@ describe('v8-only management connections', () => {
         `https://proxy.example${path}`
       );
     }
+  });
+});
+
+describe('loopback management connections', () => {
+  test.each([
+    'http://127.0.0.1:8317',
+    'https://[::1]:8317/gateway/v8/management',
+    'LOCALHOST:8317',
+  ])('accepts a local proxy at %s', (base) => {
+    expect(isLoopbackApiBase(base)).toBe(true);
+  });
+
+  test.each([
+    'https://proxy-review.test',
+    'https://localhost.proxy-review.test',
+    'http://localhost@proxy-review.test',
+    'https://proxy-review.test/127.0.0.1',
+    'http://[::2]:8317',
+    'https://[',
+    '',
+  ])('rejects non-loopback or invalid bases (%s)', (base) => {
+    expect(isLoopbackApiBase(base)).toBe(false);
   });
 });

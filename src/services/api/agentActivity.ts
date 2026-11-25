@@ -52,7 +52,7 @@ export interface ActivityHost {
   disk: ActivityMetric;
   pressure?: Pressure;
   agents: { counts?: Partial<Record<AgentState, number>>; reason?: string };
-  jobs: { available: boolean; running: ActivityJob[]; queued: ActivityJob[]; reason?: string };
+  jobs: { running?: ActivityJob[]; queued?: ActivityJob[]; reason?: string };
 }
 
 export type ActivityResult =
@@ -102,15 +102,16 @@ function parsePressure(value: unknown): Pressure | undefined {
   };
 }
 
-function parseJobs(value: unknown): ActivityJob[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((item: unknown) => {
+function parseJobs(value: unknown): ActivityJob[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const jobs = value.flatMap((item: unknown) => {
     const job = record(item);
     const id = str(job?.job_id);
     return id
       ? [{ id, label: str(job?.label), repo: str(job?.repo), waitReason: str(job?.wait_reason) }]
       : [];
   });
+  return jobs.length > 0 || value.length === 0 ? jobs : undefined;
 }
 
 export function parseAgentActivity(payload: unknown): ActivityHost[] {
@@ -134,8 +135,6 @@ export function parseAgentActivity(payload: unknown): ActivityHost[] {
       }
     }
     const jobs = record(snapshot?.jobs);
-    const jobsAvailable =
-      jobs?.status === 'ok' && (Array.isArray(jobs.running) || Array.isArray(jobs.queued));
     const ts = nonnegative(snapshot?.ts);
     parsedHosts.push({
       name,
@@ -153,9 +152,8 @@ export function parseAgentActivity(payload: unknown): ActivityHost[] {
       pressure: parsePressure(snapshot?.pressure),
       agents: { counts, reason: str(agents?.reason) },
       jobs: {
-        available: jobsAvailable,
-        queued: jobsAvailable ? parseJobs(jobs?.queued) : [],
-        running: jobsAvailable ? parseJobs(jobs?.running) : [],
+        queued: jobs?.status === 'ok' ? parseJobs(jobs.queued) : undefined,
+        running: jobs?.status === 'ok' ? parseJobs(jobs.running) : undefined,
         reason: str(jobs?.reason),
       },
     });

@@ -132,6 +132,10 @@
     "system_info": "运行与诊断信息"
   },
   "agent_activity": {
+    "local_only": "仅在连接本地代理时可查看智能体活动。",
+    "stale_refresh": "已过期 · 上次成功刷新于{{age}}",
+    "running_jobs_unavailable": "运行中的任务不可用。",
+    "queued_jobs_unavailable": "排队中的任务不可用。",
     "outage": "智能体活动不可用",
     "status": {
       "unreachable": "无法连接本地仪表板。请在运行 CLIProxyAPI 的主机上执行 agent-activity serve --port 8765，然后刷新。",

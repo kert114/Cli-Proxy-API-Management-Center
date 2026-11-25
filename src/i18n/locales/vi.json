@@ -132,6 +132,10 @@
     "system_info": "Runtime & chẩn đoán"
   },
   "agent_activity": {
+    "local_only": "Chỉ xem được hoạt động tác nhân khi kết nối với proxy cục bộ.",
+    "stale_refresh": "Dữ liệu cũ · lần làm mới thành công gần nhất {{age}}",
+    "running_jobs_unavailable": "Không có dữ liệu về tác vụ đang chạy.",
+    "queued_jobs_unavailable": "Không có dữ liệu về tác vụ đang chờ.",
     "outage": "Hoạt động tác nhân không khả dụng",
     "status": {
       "unreachable": "Không thể kết nối với bảng theo dõi cục bộ. Chạy agent-activity serve --port 8765 trên máy chạy CLIProxyAPI rồi làm mới.",

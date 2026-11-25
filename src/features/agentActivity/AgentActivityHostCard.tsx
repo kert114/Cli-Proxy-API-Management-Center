@@ -107,9 +107,10 @@ export function AgentActivityHostCard({ host }: { host: ActivityHost }) {
   const hostDetails = [host.host === host.name ? undefined : host.host, host.os, sampledAt]
     .filter(Boolean)
     .join(' · ');
+  const { queued, running, reason: jobsReason } = host.jobs;
   const jobs = [
-    ...host.jobs.queued.map((job) => ({ ...job, status: 'queued' as const })),
-    ...host.jobs.running.map((job) => ({ ...job, status: 'running' as const })),
+    ...(queued ?? []).map((job) => ({ ...job, status: 'queued' as const })),
+    ...(running ?? []).map((job) => ({ ...job, status: 'running' as const })),
   ];
 
   return (
@@ -155,7 +156,7 @@ export function AgentActivityHostCard({ host }: { host: ActivityHost }) {
             </section>
             <section className={styles.section}>
               <h3>{t('agent_activity.jobs')}</h3>
-              {jobs.length ? (
+              {jobs.length > 0 && (
                 <ul className={styles.jobs}>
                   {jobs.map((job) => (
                     <li key={job.id}>
@@ -171,10 +172,21 @@ export function AgentActivityHostCard({ host }: { host: ActivityHost }) {
                     </li>
                   ))}
                 </ul>
+              )}
+              {running && queued && jobs.length === 0 && (
+                <p className={styles.detail}>{t('agent_activity.no_jobs')}</p>
+              )}
+              {!running && !queued ? (
+                <p className={styles.detail}>{available(jobsReason)}</p>
               ) : (
-                <p className={styles.detail}>
-                  {host.jobs.available ? t('agent_activity.no_jobs') : available(host.jobs.reason)}
-                </p>
+                <>
+                  {!running && (
+                    <p className={styles.detail}>{t('agent_activity.running_jobs_unavailable')}</p>
+                  )}
+                  {!queued && (
+                    <p className={styles.detail}>{t('agent_activity.queued_jobs_unavailable')}</p>
+                  )}
+                </>
               )}
             </section>
           </>

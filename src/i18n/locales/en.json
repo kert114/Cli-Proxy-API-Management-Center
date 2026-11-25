@@ -132,6 +132,10 @@
     "system_info": "Runtime & diagnostics"
   },
   "agent_activity": {
+    "local_only": "Agent activity is available only when connected to a local proxy.",
+    "stale_refresh": "Stale · last successful refresh {{age}}",
+    "running_jobs_unavailable": "Running jobs unavailable.",
+    "queued_jobs_unavailable": "Queued jobs unavailable.",
     "outage": "Agent activity unavailable",
     "status": {
       "unreachable": "Could not reach the local dashboard. Run agent-activity serve --port 8765 on the machine running CLIProxyAPI, then refresh.",

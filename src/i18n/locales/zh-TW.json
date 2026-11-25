@@ -132,6 +132,10 @@
     "system_info": "運行與診斷資訊"
   },
   "agent_activity": {
+    "local_only": "只有連線至本機代理時才能查看代理活動。",
+    "stale_refresh": "已過期 · 上次成功重新整理於{{age}}",
+    "running_jobs_unavailable": "無法取得執行中的工作。",
+    "queued_jobs_unavailable": "無法取得佇列中的工作。",
     "outage": "代理活動無法使用",
     "status": {
       "unreachable": "無法連線至本機儀表板。請在執行 CLIProxyAPI 的主機上執行 agent-activity serve --port 8765，然後重新整理。",

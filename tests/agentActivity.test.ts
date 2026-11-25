@@ -12,12 +12,12 @@ describe('agent activity snapshot', () => {
     expect(mac.swap.percent).toBe(0);
     expect(mac.pressure?.memory).toEqual({ level: 4 });
     expect(mac.agents.counts?.waiting_for_children).toBe(1);
-    expect(mac.jobs.queued[0]).toMatchObject({
+    expect(mac.jobs.queued?.[0]).toMatchObject({
       label: 'bun run verify',
       repo: 'sample-panel',
       waitReason: 'memory pressure',
     });
-    expect(mac.jobs.running[0].label).toBe('go test ./...');
+    expect(mac.jobs.running?.[0].label).toBe('go test ./...');
     expect(vm.host).toBe('build-vm.local');
     expect(vm.pressure?.memory).toEqual({ someAvg10: 2.47, fullAvg10: 0.38 });
     expect(spare).toMatchObject({
@@ -71,11 +71,36 @@ test('keeps usable hosts when some snapshot sections or host entries are missing
     name: 'partial-host',
     agents: { counts: { running: 2 } },
     cpu: { percent: 25 },
-    jobs: { available: true, queued: [{ id: 'waiting-1', waitReason: 'CPU load' }], running: [] },
+    jobs: { queued: [{ id: 'waiting-1', waitReason: 'CPU load' }] },
   });
   expect(hosts[0].agents.counts?.queued).toBeUndefined();
   expect(hosts[0].memory.percent).toBeUndefined();
-  expect(hosts[1].jobs).toMatchObject({ available: false, queued: [], running: [] });
+  expect(hosts[0].jobs.running).toBeUndefined();
+  expect(hosts[1].jobs.queued).toBeUndefined();
+  expect(hosts[1].jobs.running).toBeUndefined();
+});
+
+test('distinguishes empty job lists from missing or invalid lists', () => {
+  const definitions = [
+    { status: 'ok', queued: [] },
+    { status: 'ok', running: [], queued: [] },
+    { status: 'ok', running: [{ job_id: 'running-1' }], queued: [{}] },
+    { status: 'unavailable', running: [], queued: [], reason: 'Job directory unavailable' },
+  ];
+  const [queuedOnly, bothEmpty, runningOnly, unavailable] = parseAgentActivity({
+    hosts: definitions.map((jobs, index) => ({ alias: `host-${index}`, snapshot: { jobs } })),
+  });
+
+  expect(queuedOnly.jobs.queued).toEqual([]);
+  expect(queuedOnly.jobs.running).toBeUndefined();
+  expect(bothEmpty.jobs).toMatchObject({ running: [], queued: [] });
+  expect(runningOnly.jobs.running).toMatchObject([{ id: 'running-1' }]);
+  expect(runningOnly.jobs.queued).toBeUndefined();
+  expect(unavailable.jobs).toEqual({
+    running: undefined,
+    queued: undefined,
+    reason: 'Job directory unavailable',
+  });
 });
 
 test('fetches the fixed loopback snapshot through the authenticated v8 API call', async () => {
